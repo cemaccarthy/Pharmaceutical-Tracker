@@ -63,7 +63,7 @@
     border-radius: 12px;
     margin-bottom: 8px;
   }
-  .group-content { display: flex; flex-direction: column; gap: 16px; transition: max-height 0.3s ease-out; }
+  .group-content { display: flex; flex-direction: column; gap: 16px; }
   .group-content.collapsed { display: none; }
 
   .timer-card {
@@ -155,13 +155,33 @@
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
-  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
   
-  .inline-group { display: flex; gap: 10px; align-items: flex-start; }
-  .inline-group > * { flex: 1; }
+  /* Unified Input Styles for alignment */
+  .modal-input, .modal-select { 
+    width: 100%; 
+    height: 44px; 
+    padding: 0 12px; 
+    margin-bottom: 12px; 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    font-family: 'DM Mono', monospace; 
+    font-size: 0.9rem; 
+    background: white;
+    display: block;
+  }
+
+  .inline-group { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+  .inline-group > div { flex: 1; }
   .stepper-row { display: flex; align-items: center; margin-bottom: 15px; }
   .stepper-btn { background: #eee; border: 1px solid var(--border); width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
   .stepper-num { flex: 1; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 40px; line-height: 40px; }
+
+  .clock-icon-svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
 </style>
 </head>
 <body>
@@ -200,17 +220,17 @@
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medication Name</label>
     <input class="modal-input" id="modalInput" type="text" placeholder="e.g. Escitalopram">
     
-    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Timing Group (24-Hour Time)</label>
-    <input class="modal-input" id="modalInputTime" type="time" required>
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Timing Group</label>
+    <input class="modal-input" id="modalInputTime" type="time">
 
     <div class="inline-group">
       <div>
         <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Amount</label>
-        <input class="modal-input" id="modalInputDosage" type="number" placeholder="Amount">
+        <input class="modal-input" id="modalInputDosage" type="number" placeholder="Amt" style="margin-bottom:0;">
       </div>
       <div>
         <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Unit</label>
-        <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)">
+        <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)" style="margin-bottom:0;">
           <option value="mg">mg</option>
           <option value="μg">μg</option>
           <option value="g">g</option>
@@ -269,8 +289,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v12');
-    const savedLog = localStorage.getItem('med_log_v12');
+    const savedTimers = localStorage.getItem('med_timers_v13');
+    const savedLog = localStorage.getItem('med_log_v13');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -280,8 +300,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v12', JSON.stringify(timers));
-    localStorage.setItem('med_log_v12', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v13', JSON.stringify(timers));
+    localStorage.setItem('med_log_v13', JSON.stringify(dailyLog));
   }
 
   function toggleGroup(time) {
@@ -435,31 +455,28 @@
   function render() {
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
-
-    // Group timers by time
     const groups = {};
     timers.forEach(t => {
       if (!groups[t.timeGroup]) groups[t.timeGroup] = [];
       groups[t.timeGroup].push(t);
     });
-
-    // Sort group times
     const sortedTimes = Object.keys(groups).sort();
+
+    const clockSvg = `<svg class="clock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
 
     sortedTimes.forEach(time => {
       const groupDiv = document.createElement('div');
       groupDiv.className = 'timing-group';
-      
       const isCollapsed = collapsedGroups.has(time);
       const groupTimers = groups[time];
       const hasStopped = groupTimers.some(t => !t.running);
 
       groupDiv.innerHTML = `
         <div class="group-header" onclick="toggleGroup('${time}')">
-          <span>🕒 ${time} (${groupTimers.length} Meds)</span>
+          <span style="display:flex; align-items:center;">${clockSvg} ${time} (${groupTimers.length})</span>
           <div style="display:flex; gap:10px; align-items:center;">
             ${hasStopped ? `<button class="btn btn-start" style="padding:4px 8px; font-size:0.55rem;" onclick="event.stopPropagation(); startGroupTimers('${time}')">Start All</button>` : ''}
-            <span>${isCollapsed ? '▼' : '▲'}</span>
+            <span style="font-size:0.6rem;">${isCollapsed ? 'SHOW' : 'HIDE'}</span>
           </div>
         </div>
         <div class="group-content ${isCollapsed ? 'collapsed' : ''}">
