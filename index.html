@@ -38,7 +38,6 @@
   .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
   .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
 
-  /* Tab Styles */
   .tab-container {
     display: flex;
     overflow-x: auto;
@@ -64,6 +63,7 @@
     background: black;
     color: white;
   }
+  .tab.hidden { display: none; }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
@@ -169,7 +169,6 @@
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 95%; max-width: 420px; color: black; overflow-y: auto; max-height: 90vh; }
   
-  /* UNIFIED INPUT STYLES */
   .modal-input, .modal-select { 
     width: 100%; 
     height: 48px; 
@@ -182,7 +181,7 @@
     background: white; 
     display: block;
     -webkit-appearance: none;
-    line-height: 48px; /* For time input centering */
+    line-height: 48px;
   }
 
   .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
@@ -210,7 +209,7 @@
     <div class="tab" data-name="Prophylactic" onclick="setTab('Prophylactic')">Prophylactic</div>
     <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited Duration</div>
     <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
-    <div class="tab" data-name="Recreation" onclick="setTab('Recreation')">Recreation</div>
+    <div class="tab hidden" id="recreationTab" data-name="Recreation" onclick="setTab('Recreation')">Recreation</div>
   </div>
 
   <div id="timersRoot"></div>
@@ -271,7 +270,14 @@
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
     <select class="modal-select" id="modalSelectRoa">
-        <option value="Oral">Oral</option><option value="Sublingual">Sublingual</option><option value="Topical">Topical</option><option value="Inhalation">Inhalation</option>
+        <option value="Oral">Oral</option>
+        <option value="Sublingual">Sublingual</option>
+        <option value="Buccal">Buccal</option>
+        <option value="Transdermal">Transdermal</option>
+        <option value="Topical">Topical</option>
+        <option value="Inhalation">Inhalation</option>
+        <option value="Intranasal">Intranasal</option>
+        <option value="Intravenous">Intravenous</option>
     </select>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Initial Dose #</label>
@@ -296,8 +302,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v16');
-    const savedLog = localStorage.getItem('med_log_v16');
+    const savedTimers = localStorage.getItem('med_timers_v17');
+    const savedLog = localStorage.getItem('med_log_v17');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -305,8 +311,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v16', JSON.stringify(timers));
-    localStorage.setItem('med_log_v16', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v17', JSON.stringify(timers));
+    localStorage.setItem('med_log_v17', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
@@ -322,11 +328,20 @@
     document.getElementById('stepperVal').textContent = modalDoseNum;
   }
 
-  function openModal() { 
+  function resetModal() {
+    document.getElementById('modalInput').value = '';
+    document.getElementById('modalInputDosage').value = '';
+    document.getElementById('modalInputTime').value = '08:00';
+    document.getElementById('modalSelectUnit').value = 'mg';
+    document.getElementById('modalSelectMedium').value = 'Tablet';
+    document.getElementById('modalSelectRoa').value = 'Oral';
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
-    document.getElementById('modalInputTime').value = '08:00';
     document.querySelectorAll('input[name="tabGrp"]').forEach(c => c.checked = false);
+  }
+
+  function openModal() { 
+    resetModal();
     document.getElementById('modalOverlay').classList.add('show'); 
   }
   
@@ -369,6 +384,13 @@
         const t = timers.find(item => item.id === id);
         if(t) delete dailyLog[t.name];
         timers = timers.filter(item => item.id !== id);
+        
+        // If the only recreation med was deleted, switch tab back to All
+        const hasRecreation = timers.some(t => t.tabs.includes('Recreation'));
+        if (!hasRecreation && currentTab === 'Recreation') {
+            setTab('All Medications');
+        }
+
         saveData();
         render();
         updateTotalsUI();
@@ -387,6 +409,10 @@
   function render() {
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
+
+    // Handle Recreation Tab Visibility
+    const hasRecreation = timers.some(t => t.tabs.includes('Recreation'));
+    document.getElementById('recreationTab').classList.toggle('hidden', !hasRecreation);
 
     let filtered = timers.filter(t => {
       if (currentTab === 'All Medications') {
@@ -472,8 +498,10 @@
   }
 
   function confirmClearTotals() {
-    if (confirm("Clear all totals?")) {
-      dailyLog = {}; saveData(); updateTotalsUI();
+    if (confirm("Clear all cumulative dose totals?")) {
+        dailyLog = {};
+        saveData();
+        updateTotalsUI();
     }
   }
 
