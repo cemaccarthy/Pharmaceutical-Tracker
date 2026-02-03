@@ -49,7 +49,6 @@
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
-  /* Grouping Styles */
   .timing-group { border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
   .group-header { 
     background: #eee; 
@@ -141,7 +140,7 @@
     border-top: 1px solid var(--border);
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform(0.3s) cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1002;
     padding: 20px;
     max-height: 80vh;
@@ -156,10 +155,9 @@
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
   
-  /* Unified Input Styles for alignment */
   .modal-input, .modal-select { 
     width: 100%; 
-    height: 44px; 
+    height: 48px; /* Standardized height */
     padding: 0 12px; 
     margin-bottom: 12px; 
     border: 1px solid var(--border); 
@@ -168,6 +166,12 @@
     font-size: 0.9rem; 
     background: white;
     display: block;
+    -webkit-appearance: none; /* Uniform look on iOS */
+  }
+
+  /* Specific reset for time input to ensure same proportions */
+  input[type="time"].modal-input {
+    line-height: 48px;
   }
 
   .inline-group { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
@@ -289,8 +293,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v13');
-    const savedLog = localStorage.getItem('med_log_v13');
+    const savedTimers = localStorage.getItem('med_timers_v14');
+    const savedLog = localStorage.getItem('med_log_v14');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -300,8 +304,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v13', JSON.stringify(timers));
-    localStorage.setItem('med_log_v13', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v14', JSON.stringify(timers));
+    localStorage.setItem('med_log_v14', JSON.stringify(dailyLog));
   }
 
   function toggleGroup(time) {
@@ -374,11 +378,6 @@
     render();
     updateTotalsUI();
     closeModal();
-    
-    document.getElementById('modalInput').value = '';
-    document.getElementById('modalInputDosage').value = '';
-    document.getElementById('modalInputOtherUnit').value = '';
-    document.getElementById('modalInputOtherMedium').value = '';
   }
 
   function startGroupTimers(time) {
@@ -411,10 +410,15 @@
   }
 
   function deleteTimer(id) {
-    if(confirm("Remove this medication?")) {
-        timers = timers.filter(t => t.id !== id);
+    if(confirm("Remove this medication and clear its cumulative history?")) {
+        const t = timers.find(item => item.id === id);
+        if(t) {
+            delete dailyLog[t.name]; // Automatically remove from cumulative tracking
+        }
+        timers = timers.filter(item => item.id !== id);
         saveData();
         render();
+        updateTotalsUI();
     }
   }
 
