@@ -12,7 +12,7 @@
     --bg: #f8f9fa;
     --surface: #ffffff;
     --surface-hover: #f1f3f5;
-    --accent: #2dbb5d; /* Darker green for readability on light */
+    --accent: #2dbb5d; 
     --accent-dim: rgba(45, 187, 93, 0.1);
     --text: #000000;
     --text-muted: #555555;
@@ -37,7 +37,6 @@
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
-  /* Timer Card - Now White and Clean */
   .timer-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -65,7 +64,6 @@
   }
   .running .time-display { color: var(--accent); }
 
-  /* Buttons */
   .controls { display: flex; justify-content: center; gap: 12px; }
   .btn { 
     font-family: 'DM Mono', monospace; 
@@ -91,27 +89,29 @@
     padding: 20px; 
     font-family: 'DM Mono', monospace;
     cursor: pointer;
+    width: 100%;
     margin-top: 10px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
   }
 
-  /* Badges */
   .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 12px; margin-left: 5px; font-weight: 600; text-transform: uppercase; vertical-align: middle; }
   .dosage-badge { background: #eee; color: #333; }
   .roa-badge { background: #e7f3ff; color: #007bff; }
 
-  /* Modal Light Theme */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-  .modal h2 { margin-bottom: 20px; color: black; }
-  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; }
+  .modal h2 { margin-bottom: 20px; color: black; font-family: 'Playfair Display', serif; }
+  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: 'DM Mono', monospace; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Medication Tracker</h1>
-  <p>Local Storage Enabled</p>
+  <p>Follow & time your medications.</p>
 </div>
 
 <div class="container" id="container">
@@ -120,13 +120,15 @@
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2 id="modalTitle">Add Med</h2>
+    <h2 id="modalTitle">Add Medication</h2>
     <div id="modalContent">
-        <input class="modal-input" id="modalInput" type="text" placeholder="Name">
+        <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Ibuprofen)">
         <input class="modal-input" id="modalInputDosage" type="text" placeholder="Dosage (e.g. 200mg)">
         <select class="modal-select" id="modalSelectRoa">
             <option value="Oral">Oral</option>
+            <option value="Sublingual">Sublingual</option>
             <option value="Topical">Topical</option>
+            <option value="Inhalation">Inhalation</option>
             <option value="Injection">Injection</option>
         </select>
     </div>
@@ -157,7 +159,7 @@
 
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
-    const dosage = document.getElementById('modalInputDosage').value;
+    const dosage = document.getElementById('modalInputDosage').value || 'N/A';
     const roa = document.getElementById('modalSelectRoa').value;
 
     if (!name) return;
@@ -175,6 +177,10 @@
     saveData();
     render();
     closeModal();
+    
+    // Reset inputs
+    document.getElementById('modalInput').value = '';
+    document.getElementById('modalInputDosage').value = '';
   }
 
   function getElapsed(timer) {
@@ -263,4 +269,3 @@
 </script>
 </body>
 </html>
-
