@@ -34,17 +34,34 @@
     padding: 20px 20px 160px;
   }
 
-  .header { text-align: center; margin-bottom: 30px; }
+  .header { text-align: center; margin-bottom: 20px; }
   .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
   .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
 
-  .footer-credit { 
-    text-align: center; 
-    font-size: 0.65rem; 
-    color: var(--text-muted); 
-    margin-top: 20px; 
+  /* Tab Styles */
+  .tab-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    margin-bottom: 25px;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-container::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 16px;
+    background: #eee;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .tab.active {
+    background: black;
+    color: white;
   }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
@@ -113,7 +130,6 @@
     margin: 4px 2px;
     display: inline-block;
   }
-
   .badge-red { background: var(--dose-bg); color: var(--dose-text); }
   .badge-yellow { background: var(--roa-bg); color: var(--roa-text); }
 
@@ -130,7 +146,6 @@
     cursor: pointer;
     z-index: 1001;
     text-align: center;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
   }
 
   .drawer {
@@ -140,7 +155,7 @@
     border-top: 1px solid var(--border);
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
-    transition: transform(0.3s) cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1002;
     padding: 20px;
     max-height: 80vh;
@@ -148,31 +163,17 @@
   }
   .drawer.open { transform: translateY(0); }
   .drawer-handle { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px; }
-  
-  .total-row { padding: 16px 0; border-bottom: 1px solid #f0f0f0; color: black; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
+  .modal { background: white; border-radius: 20px; padding: 25px; width: 95%; max-width: 420px; color: black; overflow-y: auto; max-height: 90vh; }
   
   .modal-input, .modal-select { 
-    width: 100%; 
-    height: 48px; /* Standardized height */
-    padding: 0 12px; 
-    margin-bottom: 12px; 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    font-family: 'DM Mono', monospace; 
-    font-size: 0.9rem; 
-    background: white;
-    display: block;
-    -webkit-appearance: none; /* Uniform look on iOS */
+    width: 100%; height: 48px; padding: 0 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 0.9rem; background: white; display: block;
   }
 
-  /* Specific reset for time input to ensure same proportions */
-  input[type="time"].modal-input {
-    line-height: 48px;
-  }
+  .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+  .check-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; text-transform: uppercase; background: #f0f0f0; padding: 8px; border-radius: 6px; }
 
   .inline-group { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
   .inline-group > div { flex: 1; }
@@ -180,23 +181,25 @@
   .stepper-btn { background: #eee; border: 1px solid var(--border); width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
   .stepper-num { flex: 1; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 40px; line-height: 40px; }
 
-  .clock-icon-svg {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
+  .clock-icon-svg { width: 16px; height: 16px; margin-right: 8px; vertical-align: middle; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Medication Tracker</h1>
-  <p>Follow & time your medications.</p>
-  <div class="footer-credit">Created by Christopher MacCarthy</div>
+  <p>Organize & time your intake.</p>
 </div>
 
 <div class="container" id="container">
+  <div class="tab-container" id="tabContainer">
+    <div class="tab active" onclick="setTab('All Medications')">All Medications</div>
+    <div class="tab" onclick="setTab('Prophylactic')">Prophylactic</div>
+    <div class="tab" onclick="setTab('Limited Duration')">Limited Duration</div>
+    <div class="tab" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
+    <div class="tab" onclick="setTab('Recreation')">Recreation</div>
+  </div>
+
   <div id="timersRoot"></div>
   <div class="add-btn-container">
     <button class="btn" style="width:100%; padding:15px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
@@ -224,6 +227,14 @@
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medication Name</label>
     <input class="modal-input" id="modalInput" type="text" placeholder="e.g. Escitalopram">
     
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Tab Groups (Select Multiple)</label>
+    <div class="checkbox-group">
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Prophylactic"> Prophylactic</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Duration"> Limited Duration</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Pro Re Nata"> Pro Re Nata</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Recreation"> Recreation</label>
+    </div>
+
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Timing Group</label>
     <input class="modal-input" id="modalInputTime" type="time">
 
@@ -235,41 +246,20 @@
       <div>
         <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Unit</label>
         <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)" style="margin-bottom:0;">
-          <option value="mg">mg</option>
-          <option value="μg">μg</option>
-          <option value="g">g</option>
-          <option value="Other">Other</option>
+          <option value="mg">mg</option><option value="μg">μg</option><option value="g">g</option><option value="Other">Other</option>
         </select>
       </div>
     </div>
     <input class="modal-input" id="modalInputOtherUnit" type="text" placeholder="Specify unit..." style="display:none;">
 
-    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Release Type</label>
-    <select class="modal-select" id="modalSelectRelease">
-        <option value="">None</option>
-        <option value="Instant-Release">Instant-Release</option>
-        <option value="Extended-Release">Extended-Release</option>
-    </select>
-
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
-    <select class="modal-select" id="modalSelectMedium" onchange="checkOtherMedium(this.value)">
-        <option value="Tablet">Tablet</option>
-        <option value="Capsule">Capsule</option>
-        <option value="Caplet">Caplet</option>
-        <option value="Lozenge">Lozenge</option>
-        <option value="Nasal Spray">Nasal Spray</option>
-        <option value="Other">Other</option>
+    <select class="modal-select" id="modalSelectMedium">
+        <option value="Tablet">Tablet</option><option value="Capsule">Capsule</option><option value="Caplet">Caplet</option><option value="Lozenge">Lozenge</option><option value="Nasal Spray">Nasal Spray</option>
     </select>
-    <input class="modal-input" id="modalInputOtherMedium" type="text" placeholder="Specify other medium..." style="display:none;">
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
     <select class="modal-select" id="modalSelectRoa">
-        <option value="Oral">Oral</option>
-        <option value="Sublingual">Sublingual</option>
-        <option value="Topical">Topical</option>
-        <option value="Inhalation">Inhalation</option>
-        <option value="Nasal">Nasal</option>
-        <option value="Injection">Injection</option>
+        <option value="Oral">Oral</option><option value="Sublingual">Sublingual</option><option value="Topical">Topical</option><option value="Inhalation">Inhalation</option>
     </select>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Initial Dose #</label>
@@ -289,28 +279,29 @@
 <script>
   let timers = [];
   let dailyLog = {}; 
+  let currentTab = 'All Medications';
   let modalDoseNum = 1;
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v14');
-    const savedLog = localStorage.getItem('med_log_v14');
+    const savedTimers = localStorage.getItem('med_timers_v15');
+    const savedLog = localStorage.getItem('med_log_v15');
     if (savedLog) dailyLog = JSON.parse(savedLog);
-    if (savedTimers) {
-      timers = JSON.parse(savedTimers);
-      render();
-    }
+    if (savedTimers) timers = JSON.parse(savedTimers);
+    render();
     updateTotalsUI();
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v14', JSON.stringify(timers));
-    localStorage.setItem('med_log_v14', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v15', JSON.stringify(timers));
+    localStorage.setItem('med_log_v15', JSON.stringify(dailyLog));
   }
 
-  function toggleGroup(time) {
-    if (collapsedGroups.has(time)) collapsedGroups.delete(time);
-    else collapsedGroups.add(time);
+  function setTab(tabName) {
+    currentTab = tabName;
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.innerText === tabName);
+    });
     render();
   }
 
@@ -319,25 +310,11 @@
     document.getElementById('stepperVal').textContent = modalDoseNum;
   }
 
-  function checkOtherMedium(val) {
-    const otherInput = document.getElementById('modalInputOtherMedium');
-    otherInput.style.display = (val === 'Other') ? 'block' : 'none';
-  }
-
-  function checkOtherUnit(val) {
-    const otherInput = document.getElementById('modalInputOtherUnit');
-    otherInput.style.display = (val === 'Other') ? 'block' : 'none';
-  }
-
   function openModal() { 
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
-    document.getElementById('modalSelectMedium').value = 'Tablet';
-    document.getElementById('modalSelectUnit').value = 'mg';
-    document.getElementById('modalSelectRelease').value = '';
     document.getElementById('modalInputTime').value = '08:00';
-    checkOtherMedium('Tablet');
-    checkOtherUnit('mg');
+    document.querySelectorAll('input[name="tabGrp"]').forEach(c => c.checked = false);
     document.getElementById('modalOverlay').classList.add('show'); 
   }
   
@@ -347,15 +324,13 @@
     const name = document.getElementById('modalInput').value;
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
     const timeGroup = document.getElementById('modalInputTime').value;
-    const roa = document.getElementById('modalSelectRoa').value;
-    const release = document.getElementById('modalSelectRelease').value;
-    
-    let unit = document.getElementById('modalSelectUnit').value;
-    if (unit === 'Other') unit = document.getElementById('modalInputOtherUnit').value || 'unit';
-    let medium = document.getElementById('modalSelectMedium').value;
-    if (medium === 'Other') medium = document.getElementById('modalInputOtherMedium').value || 'Other';
+    const selectedTabs = Array.from(document.querySelectorAll('input[name="tabGrp"]:checked')).map(c => c.value);
 
-    if (!name || !timeGroup) return;
+    if (!name || !timeGroup || selectedTabs.length === 0) {
+      alert("Please enter a name, time, and at least one tab group.");
+      return;
+    }
+
     if (!dailyLog[name]) dailyLog[name] = 0;
     dailyLog[name] += amount;
 
@@ -364,10 +339,10 @@
       name,
       dosageAmount: amount,
       timeGroup,
-      unit,
-      roa,
-      medium,
-      release,
+      tabs: selectedTabs,
+      unit: document.getElementById('modalSelectUnit').value,
+      roa: document.getElementById('modalSelectRoa').value,
+      medium: document.getElementById('modalSelectMedium').value,
       doseNum: modalDoseNum,
       startedAt: null,
       elapsed: 0,
@@ -380,52 +355,13 @@
     closeModal();
   }
 
-  function startGroupTimers(time) {
-    const now = Date.now();
-    timers.forEach(t => {
-      if (t.timeGroup === time && !t.running) {
-        t.running = true;
-        t.startedAt = now;
-      }
-    });
-    saveData();
-    render();
-  }
-
-  function startTimer(id) {
-    const t = timers.find(t => t.id === id);
-    t.running = true;
-    t.startedAt = Date.now();
-    saveData();
-    render();
-  }
-
-  function stopTimer(id) {
-    const t = timers.find(t => t.id === id);
-    t.elapsed += (Date.now() - t.startedAt);
-    t.running = false;
-    t.startedAt = null;
-    saveData();
-    render();
-  }
-
   function deleteTimer(id) {
-    if(confirm("Remove this medication and clear its cumulative history?")) {
+    if(confirm("Remove this medication?")) {
         const t = timers.find(item => item.id === id);
-        if(t) {
-            delete dailyLog[t.name]; // Automatically remove from cumulative tracking
-        }
+        if(t) delete dailyLog[t.name];
         timers = timers.filter(item => item.id !== id);
         saveData();
         render();
-        updateTotalsUI();
-    }
-  }
-
-  function confirmClearTotals() {
-    if (confirm("Clear all cumulative dose totals?")) {
-        dailyLog = {};
-        saveData();
         updateTotalsUI();
     }
   }
@@ -439,77 +375,91 @@
     return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
   }
 
-  function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
-
-  function updateTotalsUI() {
-    const list = document.getElementById('totalsList');
-    list.innerHTML = '';
-    const entries = Object.entries(dailyLog);
-    if (entries.length === 0) {
-        list.innerHTML = '<p style="color:#888; text-align: center; padding: 20px;">No doses recorded yet.</p>';
-        return;
-    }
-    entries.forEach(([name, total]) => {
-        const timer = timers.find(t => t.name === name);
-        const unit = timer ? timer.unit : '';
-        list.innerHTML += `<div class="total-row"><div><span style="display:block; font-weight:700;">${name}</span><span style="font-size:0.9rem;">${total} ${unit}</span></div></div>`;
-    });
-  }
-
   function render() {
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
+
+    // Filter timers based on tab
+    let filtered = timers.filter(t => {
+      if (currentTab === 'All Medications') {
+        return t.tabs.some(tab => tab !== 'Recreation');
+      }
+      return t.tabs.includes(currentTab);
+    });
+
     const groups = {};
-    timers.forEach(t => {
+    filtered.forEach(t => {
       if (!groups[t.timeGroup]) groups[t.timeGroup] = [];
       groups[t.timeGroup].push(t);
     });
-    const sortedTimes = Object.keys(groups).sort();
 
-    const clockSvg = `<svg class="clock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+    const sortedTimes = Object.keys(groups).sort();
+    const clockSvg = `<svg class="clock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
 
     sortedTimes.forEach(time => {
       const groupDiv = document.createElement('div');
       groupDiv.className = 'timing-group';
       const isCollapsed = collapsedGroups.has(time);
       const groupTimers = groups[time];
-      const hasStopped = groupTimers.some(t => !t.running);
 
       groupDiv.innerHTML = `
         <div class="group-header" onclick="toggleGroup('${time}')">
           <span style="display:flex; align-items:center;">${clockSvg} ${time} (${groupTimers.length})</span>
-          <div style="display:flex; gap:10px; align-items:center;">
-            ${hasStopped ? `<button class="btn btn-start" style="padding:4px 8px; font-size:0.55rem;" onclick="event.stopPropagation(); startGroupTimers('${time}')">Start All</button>` : ''}
-            <span style="font-size:0.6rem;">${isCollapsed ? 'SHOW' : 'HIDE'}</span>
-          </div>
+          <span style="font-size:0.6rem;">${isCollapsed ? 'SHOW' : 'HIDE'}</span>
         </div>
         <div class="group-content ${isCollapsed ? 'collapsed' : ''}">
           ${groupTimers.map(t => `
             <div class="timer-card ${t.running ? 'running' : ''}">
               <div class="name-row">
                 <span class="med-title">${t.name}</span>
-                <button style="border:none; background:none; color:#ddd; font-size: 1.2rem; margin-left: auto;" onclick="deleteTimer(${t.id})">✕</button>
+                <button style="border:none; background:none; color:#ddd; font-size: 1.2rem;" onclick="deleteTimer(${t.id})">✕</button>
               </div>
-              <div class="name-row" style="margin-top: -5px; gap: 4px;">
+              <div class="name-row" style="margin-top:-5px">
                 <span class="badge">${t.dosageAmount}${t.unit}</span>
-                <span class="badge">${t.medium}</span>
-                ${t.release ? `<span class="badge">${t.release}</span>` : ''}
-              </div>
-              <div class="name-row" style="margin-top: -8px; gap: 4px;">
                 <span class="badge badge-yellow">${t.roa}</span>
                 <span class="badge badge-red">Dose ${t.doseNum}</span>
               </div>
               <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
               <div class="controls">
-                ${t.running ? 
-                  `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop</button>` : 
-                  `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
+                <button class="btn ${t.running ? 'btn-stop' : 'btn-start'}" onclick="${t.running ? 'stopTimer' : 'startTimer'}(${t.id})">
+                  ${t.running ? 'Stop' : 'Start'}
+                </button>
               </div>
             </div>
           `).join('')}
         </div>
       `;
       root.appendChild(groupDiv);
+    });
+  }
+
+  function toggleGroup(time) {
+    if (collapsedGroups.has(time)) collapsedGroups.delete(time);
+    else collapsedGroups.add(time);
+    render();
+  }
+
+  function startTimer(id) {
+    const t = timers.find(t => t.id === id);
+    t.running = true; t.startedAt = Date.now();
+    saveData(); render();
+  }
+
+  function stopTimer(id) {
+    const t = timers.find(t => t.id === id);
+    t.elapsed += (Date.now() - t.startedAt);
+    t.running = false; t.startedAt = null;
+    saveData(); render();
+  }
+
+  function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
+
+  function updateTotalsUI() {
+    const list = document.getElementById('totalsList');
+    list.innerHTML = '';
+    Object.entries(dailyLog).forEach(([name, total]) => {
+      const t = timers.find(item => item.name === name);
+      list.innerHTML += `<div class="total-row"><strong>${name}</strong>: ${total} ${t ? t.unit : 'units'}</div>`;
     });
   }
 
