@@ -25,12 +25,21 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px 20px 120px;
+    padding: 20px 20px 140px;
   }
 
   .header { text-align: center; margin-bottom: 30px; }
   .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
   .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+
+  .footer-credit { 
+    text-align: center; 
+    font-size: 0.65rem; 
+    color: var(--text-muted); 
+    margin-top: 20px; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
@@ -76,7 +85,6 @@
   .roa-badge { background: #e7f3ff; color: #007bff; }
   .dose-num-badge { background: #fff3cd; color: #856404; }
 
-  /* Drawer Styles */
   .drawer {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -108,9 +116,10 @@
     cursor: pointer;
     z-index: 999;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    text-align: center;
+    white-space: nowrap;
   }
 
-  /* Modal Layout */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; }
@@ -126,6 +135,7 @@
 <div class="header">
   <h1>Medication Tracker</h1>
   <p>Follow & time your medications.</p>
+  <div class="footer-credit">Created by Christopher MacCarthy</div>
 </div>
 
 <div class="container" id="container">
@@ -133,7 +143,7 @@
 </div>
 
 <div class="summary-bar" onclick="toggleDrawer()">
-  View Cumulative Totals 📊
+  View Cumulative Totals
 </div>
 
 <div class="drawer" id="drawer">
@@ -219,7 +229,6 @@
 
     if (!name) return;
 
-    // ADDED LOGIC: Immediately track the dose when added
     if (!dailyLog[name]) dailyLog[name] = 0;
     dailyLog[name] += amount;
 
