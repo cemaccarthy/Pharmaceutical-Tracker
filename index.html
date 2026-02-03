@@ -16,7 +16,6 @@
     --text-muted: #555555;
     --danger: #d93025;
     --border: #dee2e6;
-    /* Updated Tag Color to Light Blue */
     --tag-bg: #e7f3ff;
     --tag-text: #007bff;
   }
@@ -59,7 +58,7 @@
   .timer-card.running { border-color: var(--accent); border-width: 2px; }
 
   .name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; min-width: 150px; margin-bottom: 4px; }
+  .med-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; flex: 1; min-width: 150px; }
 
   .time-display { 
     font-family: 'DM Mono', monospace; 
@@ -87,17 +86,26 @@
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
   .btn-reset-small { font-size: 0.6rem; padding: 4px 8px; border-color: #777; color: #777; }
 
-  /* Uniform Light Blue Tag Style with Spacing */
+  /* Bigger, breathable tags */
   .badge { 
-    font-size: 0.6rem; 
-    padding: 4px 10px; 
-    border-radius: 10px; 
+    font-size: 0.75rem; 
+    padding: 6px 12px; 
+    border-radius: 12px; 
     background: var(--tag-bg); 
-    font-weight: 600; 
+    font-weight: 500; 
     color: var(--tag-text); 
     text-transform: uppercase;
-    margin: 2px 0; /* Added spacing to prevent clumping */
+    margin: 4px 2px;
+    display: inline-block;
   }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
+  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
+  
+  .inline-group { display: flex; gap: 10px; align-items: flex-start; }
+  .inline-group > * { flex: 1; }
 
   .drawer {
     position: fixed;
@@ -134,11 +142,6 @@
     white-space: nowrap;
   }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
-  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
-  
   .stepper-row { display: flex; align-items: center; margin-bottom: 15px; }
   .stepper-btn { background: #eee; border: 1px solid var(--border); width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
   .stepper-num { flex: 1; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 40px; line-height: 40px; }
@@ -177,10 +180,19 @@
   <div class="modal">
     <h2 style="font-family:'Playfair Display'; margin-bottom: 15px;">Add Medication</h2>
     <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Advil)">
-    <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 200)">
-    <input class="modal-input" id="modalInputUnit" type="text" placeholder="Unit (e.g. mg)">
     
-    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Release Type (Optional)</label>
+    <div class="inline-group">
+      <input class="modal-input" id="modalInputDosage" type="number" placeholder="Amount">
+      <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)">
+        <option value="mg">mg</option>
+        <option value="μg">μg</option>
+        <option value="g">g</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <input class="modal-input" id="modalInputOtherUnit" type="text" placeholder="Specify unit..." style="display:none;">
+
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Release Type</label>
     <select class="modal-select" id="modalSelectRelease">
         <option value="">None</option>
         <option value="Instant-Release">Instant-Release</option>
@@ -228,8 +240,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v8');
-    const savedLog = localStorage.getItem('med_log_v8');
+    const savedTimers = localStorage.getItem('med_timers_v9');
+    const savedLog = localStorage.getItem('med_log_v9');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -239,8 +251,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v8', JSON.stringify(timers));
-    localStorage.setItem('med_log_v8', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v9', JSON.stringify(timers));
+    localStorage.setItem('med_log_v9', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -253,12 +265,19 @@
     otherInput.style.display = (val === 'Other') ? 'block' : 'none';
   }
 
+  function checkOtherUnit(val) {
+    const otherInput = document.getElementById('modalInputOtherUnit');
+    otherInput.style.display = (val === 'Other') ? 'block' : 'none';
+  }
+
   function openModal() { 
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
     document.getElementById('modalSelectMedium').value = 'Tablet';
+    document.getElementById('modalSelectUnit').value = 'mg';
     document.getElementById('modalSelectRelease').value = '';
     checkOtherMedium('Tablet');
+    checkOtherUnit('mg');
     document.getElementById('modalOverlay').classList.add('show'); 
   }
   
@@ -267,17 +286,16 @@
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
-    const unit = document.getElementById('modalInputUnit').value || 'units';
     const roa = document.getElementById('modalSelectRoa').value;
     const release = document.getElementById('modalSelectRelease').value;
     
+    let unit = document.getElementById('modalSelectUnit').value;
+    if (unit === 'Other') unit = document.getElementById('modalInputOtherUnit').value || 'unit';
+
     let medium = document.getElementById('modalSelectMedium').value;
-    if (medium === 'Other') {
-      medium = document.getElementById('modalInputOtherMedium').value || 'Other';
-    }
+    if (medium === 'Other') medium = document.getElementById('modalInputOtherMedium').value || 'Other';
 
     if (!name) return;
-
     if (!dailyLog[name]) dailyLog[name] = 0;
     dailyLog[name] += amount;
 
@@ -302,7 +320,7 @@
     
     document.getElementById('modalInput').value = '';
     document.getElementById('modalInputDosage').value = '';
-    document.getElementById('modalInputUnit').value = '';
+    document.getElementById('modalInputOtherUnit').value = '';
     document.getElementById('modalInputOtherMedium').value = '';
   }
 
@@ -384,17 +402,8 @@
         const timer = timers.find(t => t.name === name);
         const unit = timer ? timer.unit : '';
         const tId = timer ? timer.id : null;
-        
         let resetBtnHtml = tId ? `<button class="btn btn-reset-small" onclick="resetTimer(${tId})">Reset Timer</button>` : '';
-
-        list.innerHTML += `
-          <div class="total-row">
-            <div>
-              <span style="display:block; font-weight:700;">${name}</span>
-              <span style="font-size:0.9rem;">${total} ${unit}</span>
-            </div>
-            ${resetBtnHtml}
-          </div>`;
+        list.innerHTML += `<div class="total-row"><div><span style="display:block; font-weight:700;">${name}</span><span style="font-size:0.9rem;">${total} ${unit}</span></div>${resetBtnHtml}</div>`;
     });
   }
 
@@ -406,7 +415,6 @@
     container.querySelectorAll('.timer-card').forEach(el => el.remove());
 
     const hasStoppedTimers = timers.some(t => !t.running);
-
     if (timers.length > 1 && hasStoppedTimers) {
       bulkDiv.classList.add('visible');
       bulkBtn.onclick = startAllNewTimers;
@@ -417,15 +425,13 @@
     timers.forEach(t => {
       const card = document.createElement('div');
       card.className = `timer-card ${t.running ? 'running' : ''}`;
-      
       let releaseBadgeHtml = t.release ? `<span class="badge">${t.release}</span>` : '';
-
       card.innerHTML = `
         <div class="name-row">
           <span class="med-title">${t.name}</span>
           <button style="border:none; background:none; color:#ddd; font-size: 1.2rem; margin-left: auto;" onclick="deleteTimer(${t.id})">✕</button>
         </div>
-        <div class="name-row" style="margin-top: -5px;">
+        <div class="name-row" style="margin-top: -5px; gap: 4px;">
           <span class="badge">${t.dosageAmount}${t.unit}</span>
           ${releaseBadgeHtml}
           <span class="badge">${t.medium}</span>
