@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,28 +32,28 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px 20px 160px;
+    padding: 20px 10px 160px; /* Reduced side padding for tighter fit */
   }
 
   .header { text-align: center; margin-bottom: 20px; }
   .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
   .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
 
+  /* Modified for no-swipe layout */
   .tab-container {
     display: flex;
-    overflow-x: auto;
-    gap: 8px;
+    justify-content: center;
+    gap: 4px;
     margin-bottom: 25px;
     padding-bottom: 10px;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap; /* Allows wrapping if screen is very narrow, but keeps them together */
   }
-  .tab-container::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 10px 18px;
+    padding: 8px 10px;
     background: #e0e0e0;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: 600;
+    border-radius: 15px;
+    font-size: 0.58rem; /* Smaller font to ensure all-on-screen */
+    font-weight: 700;
     text-transform: uppercase;
     white-space: nowrap;
     cursor: pointer;
@@ -121,7 +121,7 @@
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
 
   .badge { 
-    font-size: 0.75rem; 
+    font-size: 0.7rem; 
     padding: 6px 12px; 
     border-radius: 12px; 
     background: var(--tag-bg); 
@@ -133,6 +133,7 @@
   }
   .badge-red { background: var(--dose-bg); color: var(--dose-text); }
   .badge-yellow { background: var(--roa-bg); color: var(--roa-text); }
+  .badge-grey { background: #f0f0f0; color: #666; }
 
   .add-btn-container { margin-top: 20px; margin-bottom: 40px; }
 
@@ -174,7 +175,7 @@
   }
 
   .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-  .check-item { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; text-transform: uppercase; background: #f0f0f0; padding: 8px; border-radius: 6px; }
+  .check-item { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; text-transform: uppercase; background: #f0f0f0; padding: 8px; border-radius: 6px; }
 
   .inline-group { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
   .inline-group > div { flex: 1; }
@@ -194,10 +195,10 @@
 
 <div class="container" id="container">
   <div class="tab-container" id="tabContainer">
-    <div class="tab active" data-name="All Medications" onclick="setTab('All Medications')">All Medications</div>
+    <div class="tab active" data-name="All Medications" onclick="setTab('All Medications')">All</div>
     <div class="tab" data-name="Prophylactic" onclick="setTab('Prophylactic')">Prophylactic</div>
-    <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited Duration</div>
-    <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
+    <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited</div>
+    <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">PRN</div>
     <div class="tab" data-name=":)" onclick="setTab(':)')">:)</div>
   </div>
 
@@ -231,8 +232,8 @@
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Tab Groups (Select Multiple)</label>
     <div class="checkbox-group">
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Prophylactic"> Prophylactic</label>
-      <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Duration"> Limited Duration</label>
-      <label class="check-item"><input type="checkbox" name="tabGrp" value="Pro Re Nata"> Pro Re Nata</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Duration"> Limited</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Pro Re Nata"> PRN</label>
       <label class="check-item"><input type="checkbox" name="tabGrp" value=":)"> :)</label>
     </div>
 
@@ -251,6 +252,13 @@
         </select>
       </div>
     </div>
+
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Release Profile (Optional)</label>
+    <select class="modal-select" id="modalSelectRelease">
+        <option value="">None specified</option>
+        <option value="Immediate Release">Immediate Release</option>
+        <option value="Extended Release">Extended Release</option>
+    </select>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
     <select class="modal-select" id="modalSelectMedium" onchange="checkOtherMedium(this.value)">
@@ -297,8 +305,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v19');
-    const savedLog = localStorage.getItem('med_log_v19');
+    const savedTimers = localStorage.getItem('med_timers_v20');
+    const savedLog = localStorage.getItem('med_log_v20');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -306,8 +314,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v19', JSON.stringify(timers));
-    localStorage.setItem('med_log_v19', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v20', JSON.stringify(timers));
+    localStorage.setItem('med_log_v20', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
@@ -337,6 +345,7 @@
     document.getElementById('modalInputOtherMedium').value = '';
     document.getElementById('modalInputOtherMedium').style.display = 'none';
     document.getElementById('modalSelectRoa').value = 'Oral';
+    document.getElementById('modalSelectRelease').value = '';
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
     document.querySelectorAll('input[name="tabGrp"]').forEach(c => c.checked = false);
@@ -367,6 +376,7 @@
       tabs: selectedTabs,
       unit: document.getElementById('modalSelectUnit').value,
       roa: document.getElementById('modalSelectRoa').value,
+      release: document.getElementById('modalSelectRelease').value,
       medium: medium,
       doseNum: modalDoseNum,
       startedAt: null,
@@ -441,6 +451,7 @@
               <div class="name-row" style="margin-top:-5px">
                 <span class="badge">${t.dosageAmount}${t.unit}</span>
                 <span class="badge badge-yellow">${t.roa}</span>
+                ${t.release ? `<span class="badge badge-grey">${t.release}</span>` : ''}
                 <span class="badge badge-red">Dose ${t.doseNum}</span>
               </div>
               <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
@@ -505,4 +516,4 @@
   loadData();
 </script>
 </body>
-</html>/html>
+</html>
