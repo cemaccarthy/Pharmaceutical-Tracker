@@ -43,8 +43,8 @@
   }
   .timer-card.running { border-color: var(--accent); border-width: 2px; }
 
-  .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; }
+  .name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; min-width: 150px; }
 
   .time-display { 
     font-family: 'DM Mono', monospace; 
@@ -72,7 +72,9 @@
   .btn-reset { border-color: #777; color: #777; }
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
 
-  .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; background: #eee; font-weight: 600; color: #333; }
+  .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; background: #eee; font-weight: 600; color: #333; text-transform: uppercase; }
+  .roa-badge { background: #e7f3ff; color: #007bff; }
+  .dose-num-badge { background: #fff3cd; color: #856404; }
 
   /* Drawer Styles */
   .drawer {
@@ -90,12 +92,8 @@
     box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
   }
   .drawer.open { transform: translateY(0); }
-  .drawer-handle {
-    width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px;
-  }
-  .total-row {
-    display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: black;
-  }
+  .drawer-handle { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px; }
+  .total-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: black; }
 
   .summary-bar {
     position: fixed;
@@ -112,11 +110,15 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 
-  /* Modal Light Theme */
+  /* Modal Layout */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; }
-  .modal-input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; }
+  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
+  
+  .stepper-row { display: flex; align-items: center; margin-bottom: 15px; }
+  .stepper-btn { background: #eee; border: 1px solid var(--border); width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
+  .stepper-num { flex: 1; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 40px; line-height: 40px; }
 </style>
 </head>
 <body>
@@ -137,11 +139,7 @@
 <div class="drawer" id="drawer">
   <div class="drawer-handle" onclick="toggleDrawer()"></div>
   <h2 style="font-family:'Playfair Display'; margin-bottom:5px; color: black;">Dose Tracking</h2>
-  <p style="font-size: 0.7rem; color: #777; margin-bottom: 20px; text-transform: uppercase;">Totals persist until manually cleared</p>
-  
-  <div id="totalsList">
-    </div>
-  
+  <div id="totalsList"></div>
   <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
     <button class="btn btn-danger-fill" style="width:100%; padding: 12px;" onclick="confirmClearTotals()">Reset All Totals</button>
     <button class="btn btn-reset" style="width:100%; padding: 12px; color: black;" onclick="toggleDrawer()">Close</button>
@@ -151,9 +149,27 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 style="font-family:'Playfair Display'; margin-bottom: 15px;">Add Medication</h2>
-    <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Tylenol)">
-    <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 500)">
+    <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Advil)">
+    <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 200)">
     <input class="modal-input" id="modalInputUnit" type="text" placeholder="Unit (e.g. mg)">
+    
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
+    <select class="modal-select" id="modalSelectRoa">
+        <option value="Oral">Oral</option>
+        <option value="Sublingual">Sublingual</option>
+        <option value="Topical">Topical</option>
+        <option value="Inhalation">Inhalation</option>
+        <option value="Nasal">Nasal</option>
+        <option value="Injection">Injection</option>
+    </select>
+
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Initial Dose #</label>
+    <div class="stepper-row">
+      <button class="stepper-btn" style="border-radius: 8px 0 0 8px;" onclick="changeDoseNum(-1)">−</button>
+      <div class="stepper-num" id="stepperVal">1</div>
+      <button class="stepper-btn" style="border-radius: 0 8px 8px 0;" onclick="changeDoseNum(1)">+</button>
+    </div>
+
     <div style="display:flex; gap:10px; margin-top:10px">
       <button class="btn btn-reset" style="flex:1; color: black;" onclick="closeModal()">Cancel</button>
       <button class="btn btn-start" style="flex:1" onclick="saveNewTimer()">Add</button>
@@ -164,11 +180,11 @@
 <script>
   let timers = [];
   let dailyLog = {}; 
+  let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v4');
-    const savedLog = localStorage.getItem('med_log_v4');
-
+    const savedTimers = localStorage.getItem('med_timers_v5');
+    const savedLog = localStorage.getItem('med_log_v5');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -178,32 +194,62 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v4', JSON.stringify(timers));
-    localStorage.setItem('med_log_v4', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v5', JSON.stringify(timers));
+    localStorage.setItem('med_log_v5', JSON.stringify(dailyLog));
   }
 
-  function openModal() { document.getElementById('modalOverlay').classList.add('show'); }
+  function changeDoseNum(delta) {
+    modalDoseNum = Math.max(1, modalDoseNum + delta);
+    document.getElementById('stepperVal').textContent = modalDoseNum;
+  }
+
+  function openModal() { 
+    modalDoseNum = 1;
+    document.getElementById('stepperVal').textContent = '1';
+    document.getElementById('modalOverlay').classList.add('show'); 
+  }
+  
   function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
     const amount = document.getElementById('modalInputDosage').value || 0;
     const unit = document.getElementById('modalInputUnit').value || 'units';
+    const roa = document.getElementById('modalSelectRoa').value;
+
     if (!name) return;
+
     timers.push({
       id: Date.now(),
       name,
       dosageAmount: parseFloat(amount),
       unit,
+      roa,
+      doseNum: modalDoseNum,
       startedAt: null,
       elapsed: 0,
       running: false
     });
+
     saveData();
     render();
     closeModal();
+    
+    // Clear fields
     document.getElementById('modalInput').value = '';
     document.getElementById('modalInputDosage').value = '';
+    document.getElementById('modalInputUnit').value = '';
+  }
+
+  function logDose(timer) {
+    if (!dailyLog[timer.name]) dailyLog[timer.name] = 0;
+    dailyLog[timer.name] += timer.dosageAmount;
+    
+    // Increment the dose number for the next round
+    timer.doseNum++; 
+    
+    saveData();
+    updateTotalsUI();
   }
 
   function startTimer(id) {
@@ -212,13 +258,6 @@
     t.startedAt = Date.now();
     saveData();
     render();
-  }
-
-  function logDose(timer) {
-    if (!dailyLog[timer.name]) dailyLog[timer.name] = 0;
-    dailyLog[timer.name] += timer.dosageAmount;
-    saveData();
-    updateTotalsUI();
   }
 
   function stopTimer(id) {
@@ -234,6 +273,7 @@
   function resetTimer(id) {
     const t = timers.find(t => t.id === id);
     if (t.running) stopTimer(id);
+    else logDose(t); // If stopped, just log the dose manually
     t.elapsed = 0;
     t.running = false;
     t.startedAt = null;
@@ -250,7 +290,7 @@
   }
 
   function confirmClearTotals() {
-    if (confirm("Are you sure you want to clear all cumulative dose totals? This cannot be undone.")) {
+    if (confirm("Clear all cumulative dose totals?")) {
         dailyLog = {};
         saveData();
         updateTotalsUI();
@@ -266,9 +306,7 @@
     return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
   }
 
-  function toggleDrawer() {
-    document.getElementById('drawer').classList.toggle('open');
-  }
+  function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); }
 
   function updateTotalsUI() {
     const list = document.getElementById('totalsList');
@@ -296,15 +334,17 @@
       card.innerHTML = `
         <div class="name-row">
           <span class="med-title">${t.name}</span>
-          <span class="badge">${t.dosageAmount} ${t.unit}</span>
-          <button style="border:none; background:none; color:#ddd; font-size: 1rem;" onclick="deleteTimer(${t.id})">✕</button>
+          <span class="badge">${t.dosageAmount}${t.unit}</span>
+          <span class="badge roa-badge">${t.roa}</span>
+          <span class="badge dose-num-badge">Dose ${t.doseNum}</span>
+          <button style="border:none; background:none; color:#ddd; font-size: 1.2rem;" onclick="deleteTimer(${t.id})">✕</button>
         </div>
         <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
         <div class="controls">
           ${t.running ? 
             `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop & Log</button>` : 
             `<button class="btn btn-start" onclick="startTimer(${t.id})">Start Timer</button>`}
-          <button class="btn btn-reset" onclick="resetTimer(${t.id})">Reset</button>
+          <button class="btn btn-reset" onclick="resetTimer(${t.id})">Log & Reset</button>
         </div>
       `;
       container.insertBefore(card, addBtn);
@@ -323,4 +363,4 @@
   loadData();
 </script>
 </body>
-</html>/html>
+</html>
