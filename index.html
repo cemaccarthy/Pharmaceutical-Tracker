@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="icon.png">
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Medication Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -24,43 +25,21 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
- </head> body {
+  body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     padding: 40px 20px 80px;
-    /* subtle noise grain */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   }
 
-  .header {
-    text-align: center;
-    margin-bottom: 44px;
-  }
-  .header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-  .header p {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    margin-top: 6px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-  }
+  .header { text-align: center; margin-bottom: 44px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; letter-spacing: -0.5px; color: var(--text); }
+  .header p { color: var(--text-muted); font-size: 0.82rem; margin-top: 6px; letter-spacing: 0.6px; text-transform: uppercase; }
 
-  .container {
-    max-width: 520px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+  .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
-  /* ---- Timer Card ---- */
   .timer-card {
     background: var(--surface);
     border: 1px solid #2a2d3a;
@@ -69,370 +48,59 @@
     transition: border-color 0.4s ease, box-shadow 0.4s ease;
     animation: slideDown 0.3s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .timer-card.running {
-    border-color: var(--running-border);
-    box-shadow: 0 0 20px var(--accent-dim);
-  }
-  .timer-card.stopped {
-    border-color: var(--stopped-border);
-    box-shadow: 0 0 16px var(--danger-dim);
-  }
+  .timer-card.running { border-color: var(--running-border); box-shadow: 0 0 20px var(--accent-dim); }
+  .timer-card.stopped { border-color: var(--stopped-border); box-shadow: 0 0 16px var(--danger-dim); }
 
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* name row */
-  .name-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-  .name-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed var(--text-muted);
-    color: var(--text);
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding: 4px 0;
-    outline: none;
-    transition: border-color 0.25s;
-  }
-  .name-input:focus { border-bottom-color: var(--accent); }
-  .name-input::placeholder { color: var(--text-muted); }
+  .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .med-medium { font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 400; color: var(--text-muted); margin-left: 6px; }
 
-  /* medium text next to name */
-  .med-medium {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: var(--text-muted);
-    margin-left: 6px;
-  }
-
-  .delete-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
-  }
+  .delete-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: color 0.2s, background 0.2s; }
   .delete-btn:hover { color: var(--danger); background: var(--danger-dim); }
 
-  /* time display */
-  .time-display {
-    font-family: 'DM Mono', monospace;
-    font-size: 2.6rem;
-    font-weight: 300;
-    text-align: center;
-    letter-spacing: 2px;
-    color: var(--text);
-    margin: 8px 0 22px;
-    transition: color 0.4s;
-  }
+  .time-display { font-family: 'DM Mono', monospace; font-size: 2.6rem; font-weight: 300; text-align: center; letter-spacing: 2px; color: var(--text); margin: 8px 0 22px; transition: color 0.4s; }
   .timer-card.running .time-display { color: var(--accent); }
   .timer-card.stopped  .time-display { color: var(--danger); }
 
-  /* control buttons */
-  .controls {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-  }
-  .btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    border: 1px solid;
-    border-radius: 8px;
-    padding: 9px 24px;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-    background: transparent;
-  }
+  .controls { display: flex; justify-content: center; gap: 12px; }
+  .btn { font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; border: 1px solid; border-radius: 8px; padding: 9px 24px; cursor: pointer; transition: background 0.2s, box-shadow 0.2s, transform 0.1s; background: transparent; }
   .btn:active { transform: scale(0.95); }
 
-  .btn-start {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .btn-start:hover {
-    background: var(--accent-dim);
-    box-shadow: 0 0 12px var(--accent-glow);
-  }
+  .btn-start { border-color: var(--accent); color: var(--accent); }
+  .btn-start:hover { background: var(--accent-dim); box-shadow: 0 0 12px var(--accent-glow); }
+  .btn-stop { border-color: var(--danger); color: var(--danger); }
+  .btn-stop:hover { background: var(--danger-dim); box-shadow: 0 0 12px rgba(255,107,107,0.3); }
+  .btn-reset { border-color: var(--text-muted); color: var(--text-muted); }
+  .btn-reset:hover { border-color: var(--text); color: var(--text); background: var(--surface-hover); }
 
-  .btn-stop {
-    border-color: var(--danger);
-    color: var(--danger);
-  }
-  .btn-stop:hover {
-    background: var(--danger-dim);
-    box-shadow: 0 0 12px rgba(255,107,107,0.3);
-  }
+  .add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: 1px dashed #3a3d4a; border-radius: 16px; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 0.82rem; letter-spacing: 0.8px; text-transform: uppercase; padding: 18px; cursor: pointer; transition: border-color 0.25s, color 0.25s, background 0.25s; }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
-  .btn-reset {
-    border-color: var(--text-muted);
-    color: var(--text-muted);
-  }
-  .btn-reset:hover {
-    border-color: var(--text);
-    color: var(--text);
-    background: var(--surface-hover);
-  }
-
-  /* ---- Add Timer Button ---- */
-  .add-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: transparent;
-    border: 1px dashed #3a3d4a;
-    border-radius: 16px;
-    color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 18px;
-    cursor: pointer;
-    transition: border-color 0.25s, color 0.25s, background 0.25s;
-  }
-  .add-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-dim);
-  }
-  .add-btn .plus {
-    font-size: 1.3rem;
-    line-height: 1;
-  }
-
-  /* ---- Modal Overlay ---- */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.2s ease;
-  }
+  /* Modal Styles */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 100; justify-content: center; align-items: center; animation: fadeIn 0.2s ease; }
   .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 1px solid #2a2d3a; border-radius: 18px; padding: 32px 28px 28px; width: 90%; max-width: 380px; animation: popUp 0.28s cubic-bezier(.34,1.56,.64,1) both; }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 6px; }
+  .step-label { color: var(--text-muted); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; }
+  .modal-input, .modal-select { width: 100%; background: #12141c; border: 1px solid #2a2d3a; border-radius: 10px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.95rem; padding: 12px 14px; outline: none; margin-bottom: 10px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  .dosage-badge, .roa-badge, .dose-num-badge { display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.6px; padding: 3px 10px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
+  .dosage-badge { background: var(--accent-dim); color: var(--accent); }
+  .roa-badge { background: rgba(140,160,255,0.13); color: #8ca0ff; }
+  .dose-num-badge { background: rgba(255,200,80,0.14); color: #ffc850; }
 
-  .modal {
-    background: var(--surface);
-    border: 1px solid #2a2d3a;
-    border-radius: 18px;
-    padding: 32px 28px 28px;
-    width: 90%;
-    max-width: 380px;
-    animation: popUp 0.28s cubic-bezier(.34,1.56,.64,1) both;
-  }
-  @keyframes popUp {
-    from { opacity:0; transform: scale(0.88) translateY(12px); }
-    to   { opacity:1; transform: scale(1)   translateY(0); }
-  }
+  .toggle-row { display: flex; gap: 10px; }
+  .toggle-btn { flex: 1; background: #12141c; border: 1px solid #2a2d3a; border-radius: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; padding: 12px; cursor: pointer; }
+  .toggle-btn.active-yes { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .toggle-btn.active-no { border-color: var(--text-muted); color: var(--text); background: var(--surface-hover); }
 
-  .modal h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
-    margin-bottom: 6px;
-  }
-  .modal .step-label {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
+  .stepper-row { display: flex; align-items: center; margin-top: 14px; }
+  .stepper-btn { background: #12141c; border: 1px solid #2a2d3a; color: var(--text); width: 44px; height: 44px; cursor: pointer; }
+  .stepper-num { flex: 1; text-align: center; border-top: 1px solid #2a2d3a; border-bottom: 1px solid #2a2d3a; height: 44px; line-height: 44px; }
 
-  .modal-input {
-    width: 100%;
-    background: #12141c;
-    border: 1px solid #2a2d3a;
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.95rem;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.25s;
-  }
-  .modal-input:focus { border-color: var(--accent); }
-  .modal-input::placeholder { color: var(--text-muted); }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 22px;
-  }
-  .btn-cancel {
-    border-color: var(--text-muted);
-    color: var(--text-muted);
-  }
-  .btn-cancel:hover {
-    border-color: var(--text);
-    color: var(--text);
-    background: var(--surface-hover);
-  }
-  .btn-confirm {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .btn-confirm:hover {
-    background: var(--accent-dim);
-    box-shadow: 0 0 12px var(--accent-glow);
-  }
-
-  /* dosage & ROA badges on card */
-  .dosage-badge, .roa-badge {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.6px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin-left: 6px;
-  }
-  .dosage-badge {
-    background: var(--accent-dim);
-    color: var(--accent);
-  }
-  .roa-badge {
-    background: rgba(140,160,255,0.13);
-    color: #8ca0ff;
-  }
-
-  /* ROA dropdown in modal */
-  .modal-select {
-    width: 100%;
-    background: #12141c;
-    border: 1px solid #2a2d3a;
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.95rem;
-    padding: 12px 14px;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7f8e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    cursor: pointer;
-    transition: border-color 0.25s;
-  }
-  .modal-select:focus { border-color: var(--accent); }
-  .modal-select option { background: #1a1d27; color: var(--text); }
-
-  /* dose-number badge on card */
-  .dose-num-badge {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.6px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin-left: 6px;
-    background: rgba(255,200,80,0.14);
-    color: #ffc850;
-  }
-
-  /* yes / no toggle row inside modal */
-  .toggle-row {
-    display: flex;
-    gap: 10px;
-  }
-  .toggle-btn {
-    flex: 1;
-    background: #12141c;
-    border: 1px solid #2a2d3a;
-    border-radius: 10px;
-    color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.88rem;
-    padding: 12px;
-    cursor: pointer;
-    text-align: center;
-    transition: border-color 0.25s, color 0.25s, background 0.25s, box-shadow 0.25s;
-  }
-  .toggle-btn:hover {
-    border-color: #3a3d4a;
-    color: var(--text);
-  }
-  .toggle-btn.active-yes {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-dim);
-    box-shadow: 0 0 10px var(--accent-glow);
-  }
-  .toggle-btn.active-no {
-    border-color: var(--text-muted);
-    color: var(--text);
-    background: var(--surface-hover);
-  }
-
-  /* number stepper row */
-  .stepper-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    margin-top: 14px;
-  }
-  .stepper-btn {
-    background: #12141c;
-    border: 1px solid #2a2d3a;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 1.2rem;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .stepper-btn:first-child { border-radius: 10px 0 0 10px; }
-  .stepper-btn:last-child  { border-radius: 0 10px 10px 0; }
-  .stepper-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
-  .stepper-num {
-    flex: 1;
-    text-align: center;
-    background: #12141c;
-    border-top: 1px solid #2a2d3a;
-    border-bottom: 1px solid #2a2d3a;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 1.1rem;
-    height: 44px;
-    line-height: 44px;
-  }
-
-  /* empty state */
-  .empty-state {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    padding: 10px 0 4px;
-    letter-spacing: 0.4px;
-  }
+  .empty-state { text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 20px 0; }
 </style>
 </head>
 <body>
@@ -443,53 +111,33 @@
 </div>
 
 <div class="container" id="container">
-  <!-- timers injected here -->
   <button class="add-btn" onclick="openModal()">
     <span class="plus">+</span> Add Timer
   </button>
 </div>
 
-<!-- Modal: 1=name, 2=dosage, 3=medium, 4=ROA, 5=multi-dose toggle -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 id="modalTitle">Add Medication</h2>
-    <p class="step-label" id="modalStep">Step 1 of 5 — Medication Name</p>
-
-    <!-- text input (steps 1 & 2) -->
+    <p class="step-label" id="modalStep">Step 1 of 5</p>
     <input class="modal-input" id="modalInput" type="text" placeholder="e.g. Ibuprofen" autocomplete="off" />
-
-    <!-- ROA dropdown (step 3) -->
     <select class="modal-select" id="modalSelect" style="display:none;">
       <option value="" disabled selected>Select a route…</option>
-      <option value="Oral">Oral (by mouth)</option>
-      <option value="Sublingual">Sublingual (under tongue)</option>
-      <option value="Buccal">Buccal (cheek)</option>
+      <option value="Oral">Oral</option>
+      <option value="Sublingual">Sublingual</option>
       <option value="Inhalation">Inhalation</option>
-      <option value="Nasal">Nasal</option>
-      <option value="Ophthalmic">Ophthalmic (eyes)</option>
-      <option value="Otic">Otic (ears)</option>
-      <option value="Topical">Topical (skin)</option>
-      <option value="Rectal">Rectal</option>
-      <option value="Vaginal">Vaginal</option>
-      <option value="Intramuscular">Intramuscular (IM)</option>
-      <option value="Subcutaneous">Subcutaneous (SC)</option>
-      <option value="Intravenous">Intravenous (IV)</option>
-      <option value="Intradermal">Intradermal (ID)</option>
-      <option value="Transdermal">Transdermal (patch)</option>
+      <option value="Topical">Topical</option>
+      <option value="Intravenous">IV</option>
     </select>
-
-    <!-- multi-dose yes/no toggle (step 4) -->
     <div class="toggle-row" id="modalToggle" style="display:none;">
       <button class="toggle-btn" id="toggleYes" onclick="pickMultiDose(true)">Yes</button>
       <button class="toggle-btn" id="toggleNo"  onclick="pickMultiDose(false)">No</button>
     </div>
-    <!-- dose-number stepper (appears after picking Yes) -->
     <div class="stepper-row" id="modalStepper" style="display:none;">
       <button class="stepper-btn" onclick="changeDoseNum(-1)">−</button>
       <div class="stepper-num" id="stepperVal">1</div>
       <button class="stepper-btn" onclick="changeDoseNum(1)">+</button>
     </div>
-
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn btn-confirm" id="modalConfirmBtn" onclick="modalNext()">Next</button>
@@ -498,295 +146,178 @@
 </div>
 
 <script>
-  // ─── State ────────────────────────────────────
-  let timers = [];   // { id, name, medium, dosage, roa, doseNum, startedAt, elapsed, running }
-  let nextId  = 1;
+  let timers = [];
+  let nextId = Date.now(); // Use timestamp for unique IDs
 
-  // Modal state
-  let modalStep     = 1;   // 1=name 2=dosage 3=medium 4=ROA 5=multi-dose
-  let modalName     = '';
-  let modalDosage   = '';
-  let modalMedium   = '';
-  let modalRoa      = '';
-  let modalMulti    = null;
-  let modalDoseNum  = 1;
-
-  // ─── Helpers ──────────────────────────────────
-  function pad(n) { return String(n).padStart(2,'0'); }
-
-  function formatTime(ms) {
-    const totalSec = Math.floor(ms / 1000);
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  // Load from Storage on Startup
+  function loadData() {
+    const saved = localStorage.getItem('medication_timers');
+    if (saved) {
+      timers = JSON.parse(saved);
+      render();
+    }
   }
 
+  function saveData() {
+    localStorage.setItem('medication_timers', JSON.stringify(timers));
+  }
+
+  // --- Modal Logic ---
+  let modalStep = 1;
+  let modalData = {};
+
+  function openModal() {
+    modalStep = 1;
+    modalData = { doseNum: 1, multi: null };
+    updateModalUI();
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+  function updateModalUI() {
+    const input = document.getElementById('modalInput');
+    const select = document.getElementById('modalSelect');
+    const toggle = document.getElementById('modalToggle');
+    const stepper = document.getElementById('modalStepper');
+    const stepLabel = document.getElementById('modalStep');
+
+    input.style.display = (modalStep < 4) ? 'block' : 'none';
+    select.style.display = (modalStep === 4) ? 'block' : 'none';
+    toggle.style.display = (modalStep === 5) ? 'flex' : 'none';
+    stepper.style.display = 'none';
+
+    if (modalStep === 1) { stepLabel.textContent = "Step 1: Name"; input.placeholder = "Medication Name"; input.value = ""; }
+    if (modalStep === 2) { stepLabel.textContent = "Step 2: Dosage"; input.placeholder = "e.g. 200mg"; input.value = ""; }
+    if (modalStep === 3) { stepLabel.textContent = "Step 3: Medium"; input.placeholder = "e.g. Tablet"; input.value = ""; }
+    if (modalStep === 4) { stepLabel.textContent = "Step 4: Route"; }
+    if (modalStep === 5) { stepLabel.textContent = "Step 5: Multi-dose?"; }
+  }
+
+  function modalNext() {
+    if (modalStep === 1) modalData.name = document.getElementById('modalInput').value;
+    else if (modalStep === 2) modalData.dosage = document.getElementById('modalInput').value;
+    else if (modalStep === 3) modalData.medium = document.getElementById('modalInput').value;
+    else if (modalStep === 4) modalData.roa = document.getElementById('modalSelect').value;
+    else if (modalStep === 5) {
+      timers.push({
+        id: Date.now(),
+        ...modalData,
+        startedAt: null,
+        elapsed: 0,
+        running: false
+      });
+      saveData();
+      render();
+      closeModal();
+      return;
+    }
+    modalStep++;
+    updateModalUI();
+  }
+
+  function pickMultiDose(val) {
+    modalData.multi = val;
+    modalData.doseNum = val ? 1 : null;
+    document.getElementById('modalStepper').style.display = val ? 'flex' : 'none';
+    document.getElementById('toggleYes').className = 'toggle-btn' + (val ? ' active-yes' : '');
+    document.getElementById('toggleNo').className = 'toggle-btn' + (!val ? ' active-no' : '');
+  }
+
+  function changeDoseNum(delta) {
+    modalData.doseNum = Math.max(1, modalData.doseNum + delta);
+    document.getElementById('stepperVal').textContent = modalData.doseNum;
+  }
+
+  // --- Timer Operations ---
   function getElapsed(timer) {
     if (!timer.running) return timer.elapsed;
     return timer.elapsed + (Date.now() - timer.startedAt);
   }
 
-  function escapeHtml(str) {
-    const el = document.createElement('div');
-    el.textContent = str;
-    return el.innerHTML;
-  }
-
-  function ordinal(n) {
-    const s = ['th','st','nd','rd'];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
-
-  // ─── Modal show/hide helpers ──────────────────
-  function hideAll() {
-    document.getElementById('modalInput').style.display   = 'none';
-    document.getElementById('modalSelect').style.display  = 'none';
-    document.getElementById('modalToggle').style.display  = 'none';
-    document.getElementById('modalStepper').style.display = 'none';
-  }
-  function showInput()  { hideAll(); document.getElementById('modalInput').style.display  = 'block'; }
-  function showSelect() { hideAll(); document.getElementById('modalSelect').style.display = 'block'; }
-  function showToggle() { hideAll(); document.getElementById('modalToggle').style.display = 'block'; }
-
-  // ─── Dose-number stepper ──────────────────────
-  function changeDoseNum(delta) {
-    modalDoseNum = Math.max(1, modalDoseNum + delta);
-    document.getElementById('stepperVal').textContent = modalDoseNum;
-  }
-
-  // ─── Yes / No pick ────────────────────────────
-  function pickMultiDose(val) {
-    modalMulti = val;
-    document.getElementById('toggleYes').className = 'toggle-btn' + (val  ? ' active-yes' : '');
-    document.getElementById('toggleNo').className  = 'toggle-btn' + (!val ? ' active-no'  : '');
-    if (val) {
-      modalDoseNum = 1;
-      document.getElementById('stepperVal').textContent = '1';
-      document.getElementById('modalStepper').style.display = 'flex';
-    } else {
-      document.getElementById('modalStepper').style.display = 'none';
-    }
-  }
-
-  // ─── Modal flow ───────────────────────────────
-  function openModal() {
-    modalStep    = 1;
-    modalName    = '';
-    modalDosage  = '';
-    modalMedium  = '';
-    modalRoa     = '';
-    modalMulti   = null;
-    modalDoseNum = 1;
-
-    showInput();
-    document.getElementById('modalTitle').textContent      = 'Add Medication';
-    document.getElementById('modalStep').textContent       = 'Step 1 of 5 — Medication Name';
-    document.getElementById('modalConfirmBtn').textContent = 'Next';
-    document.getElementById('modalInput').placeholder      = 'e.g. Ibuprofen';
-    document.getElementById('modalInput').value            = '';
-    document.getElementById('modalSelect').value           = '';
-    document.getElementById('toggleYes').className         = 'toggle-btn';
-    document.getElementById('toggleNo').className          = 'toggle-btn';
-    document.getElementById('modalStepper').style.display = 'none';
-    document.getElementById('stepperVal').textContent      = '1';
-
-    document.getElementById('modalOverlay').classList.add('show');
-    setTimeout(() => document.getElementById('modalInput').focus(), 80);
-  }
-
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('show');
-  }
-
-  function modalNext() {
-    const input  = document.getElementById('modalInput');
-    const select = document.getElementById('modalSelect');
-
-    // ── Step 1: name ──
-    if (modalStep === 1) {
-      const val = input.value.trim();
-      if (!val) { input.style.borderColor = 'var(--danger)'; return; }
-      input.style.borderColor = '';
-      modalName = val;
-      modalStep = 2;
-      document.getElementById('modalTitle').textContent      = modalName;
-      document.getElementById('modalStep').textContent       = 'Step 2 of 5 — Dosage';
-      document.getElementById('modalConfirmBtn').textContent = 'Next';
-      input.placeholder = 'e.g. 200mg';
-      input.value       = '';
-      input.focus();
-
-    // ── Step 2: dosage ──
-    } else if (modalStep === 2) {
-      const val = input.value.trim();
-      if (!val) { input.style.borderColor = 'var(--danger)'; return; }
-      input.style.borderColor = '';
-      modalDosage = val;
-      modalStep   = 3;
-      document.getElementById('modalStep').textContent       = 'Step 3 of 5 — Medium';
-      document.getElementById('modalConfirmBtn').textContent = 'Next';
-      input.placeholder = 'e.g. Capsule, Tablet…';
-      input.value       = '';
-      input.focus();
-
-    // ── Step 3: medium ──
-    } else if (modalStep === 3) {
-      const val = input.value.trim();
-      if (!val) { input.style.borderColor = 'var(--danger)'; return; }
-      input.style.borderColor = '';
-      modalMedium = val;
-      modalStep   = 4;
-      document.getElementById('modalStep').textContent       = 'Step 4 of 5 — Route of Administration';
-      document.getElementById('modalConfirmBtn').textContent = 'Next';
-      showSelect();
-      select.value = '';
-      select.focus();
-
-    // ── Step 4: ROA ──
-    } else if (modalStep === 4) {
-      const val = select.value;
-      if (!val) { select.style.borderColor = 'var(--danger)'; return; }
-      select.style.borderColor = '';
-      modalRoa  = val;
-      modalStep = 5;
-      document.getElementById('modalStep').textContent       = 'Step 5 of 5 — Dose Number';
-      document.getElementById('modalConfirmBtn').textContent = 'Add Timer';
-      showToggle();
-
-    // ── Step 5: multi-dose yes/no ──
-    } else {
-      if (modalMulti === null) {
-        document.getElementById('toggleYes').style.borderColor = 'var(--danger)';
-        document.getElementById('toggleNo').style.borderColor  = 'var(--danger)';
-        return;
-      }
-      document.getElementById('toggleYes').style.borderColor = '';
-      document.getElementById('toggleNo').style.borderColor  = '';
-
-      timers.push({
-        id:        nextId++,
-        name:      modalName,
-        medium:    modalMedium,
-        dosage:    modalDosage,
-        roa:       modalRoa,
-        doseNum:   modalMulti ? modalDoseNum : null,
-        startedAt: null,
-        elapsed:   0,
-        running:   false
-      });
-      closeModal();
-      render();
-    }
-  }
-
-  // keyboard: Enter advances, Escape closes
-  document.addEventListener('keydown', (e) => {
-    if (!document.getElementById('modalOverlay').classList.contains('show')) return;
-    if (e.key === 'Enter')  modalNext();
-    if (e.key === 'Escape') closeModal();
-  });
-
-  // click outside modal closes it
-  document.getElementById('modalOverlay').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeModal();
-  });
-
-  // ─── Core actions ─────────────────────────────
-  function addTimer() { openModal(); }
-
-  function deleteTimer(id) {
-    timers = timers.filter(t => t.id !== id);
-    render();
-  }
-
   function startTimer(id) {
     const t = timers.find(t => t.id === id);
-    if (!t || t.running) return;
-    t.running   = true;
+    t.running = true;
     t.startedAt = Date.now();
+    saveData();
     render();
   }
 
   function stopTimer(id) {
     const t = timers.find(t => t.id === id);
-    if (!t || !t.running) return;
-    t.elapsed   = getElapsed(t);
-    t.running   = false;
+    t.elapsed = getElapsed(t);
+    t.running = false;
     t.startedAt = null;
+    saveData();
     render();
   }
 
   function resetTimer(id) {
     const t = timers.find(t => t.id === id);
-    if (!t) return;
-    t.elapsed   = 0;
-    t.running   = false;
+    t.elapsed = 0;
+    t.running = false;
     t.startedAt = null;
+    saveData();
     render();
   }
 
-  // ─── Render ───────────────────────────────────
+  function deleteTimer(id) {
+    timers = timers.filter(t => t.id !== id);
+    saveData();
+    render();
+  }
+
+  // --- UI Rendering ---
+  function formatTime(ms) {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    const pad = n => String(n).padStart(2, '0');
+    return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+  }
+
   function render() {
     const container = document.getElementById('container');
-    const addBtn    = container.querySelector('.add-btn');
+    const addBtn = container.querySelector('.add-btn');
+    container.querySelectorAll('.timer-card, .empty-state').forEach(el => el.remove());
 
-    container.querySelectorAll('.timer-card').forEach(el => el.remove());
+    if (timers.length === 0) {
+      container.insertAdjacentHTML('afterbegin', '<p class="empty-state">No timers yet.</p>');
+    }
 
-    timers.forEach(timer => {
+    timers.forEach(t => {
       const card = document.createElement('div');
-      card.className = 'timer-card' + (timer.running ? ' running' : (timer.elapsed > 0 ? ' stopped' : ''));
-      card.id = 'card-' + timer.id;
-
-      const doseNumBadge = timer.doseNum !== null
-        ? `<span class="dose-num-badge">${escapeHtml(ordinal(timer.doseNum))} Dose</span>`
-        : '';
-
+      card.className = `timer-card ${t.running ? 'running' : (t.elapsed > 0 ? 'stopped' : '')}`;
       card.innerHTML = `
         <div class="name-row">
-          <span style="font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:600; flex:1;">
-            ${escapeHtml(timer.name)}<span class="med-medium">${escapeHtml(timer.medium)}</span>
-            <span class="dosage-badge">${escapeHtml(timer.dosage)}</span>
-            <span class="roa-badge">${escapeHtml(timer.roa)}</span>
-            ${doseNumBadge}
+          <span style="flex:1"><strong>${t.name}</strong> <small>${t.medium}</small>
+          <span class="dosage-badge">${t.dosage}</span>
+          ${t.doseNum ? `<span class="dose-num-badge">Dose ${t.doseNum}</span>` : ''}
           </span>
-          <button class="delete-btn" onclick="deleteTimer(${timer.id})" title="Remove timer">✕</button>
+          <button class="delete-btn" onclick="deleteTimer(${t.id})">✕</button>
         </div>
-        <div class="time-display" id="time-${timer.id}">${formatTime(getElapsed(timer))}</div>
+        <div class="time-display" id="time-${t.id}">${formatTime(getElapsed(t))}</div>
         <div class="controls">
-          ${timer.running
-            ? `<button class="btn btn-stop"  onclick="stopTimer(${timer.id})">Stop</button>`
-            : `<button class="btn btn-start" onclick="startTimer(${timer.id})">Start</button>`
-          }
-          <button class="btn btn-reset" onclick="resetTimer(${timer.id})">Reset</button>
+          ${t.running ? `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop</button>` : `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
+          <button class="btn btn-reset" onclick="resetTimer(${t.id})">Reset</button>
         </div>
       `;
       container.insertBefore(card, addBtn);
     });
-
-    // empty hint
-    const existing = container.querySelector('.empty-state');
-    if (existing) existing.remove();
-    if (timers.length === 0) {
-      const hint = document.createElement('p');
-      hint.className = 'empty-state';
-      hint.textContent = 'No timers yet — add one below!';
-      container.insertBefore(hint, addBtn);
-    }
   }
 
-  // ─── Tick loop ────────────────────────────────
+  // Tick loop for UI only
   setInterval(() => {
-    timers.forEach(timer => {
-      if (!timer.running) return;
-      const el = document.getElementById('time-' + timer.id);
-      if (el) el.textContent = formatTime(getElapsed(timer));
+    timers.forEach(t => {
+      if (t.running) {
+        const el = document.getElementById(`time-${t.id}`);
+        if (el) el.textContent = formatTime(getElapsed(t));
+      }
     });
   }, 1000);
 
-  // ─── Init ─────────────────────────────────────
-  render();
+  loadData();
 </script>
 </body>
 </html>
