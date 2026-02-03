@@ -88,6 +88,7 @@
   .roa-badge { background: #e7f3ff; color: #007bff; }
   .dose-num-badge { background: #fff3cd; color: #856404; }
   .medium-badge { background: #f0f0f0; color: #555; }
+  .release-badge { background: #f0e6ff; color: #6f42c1; }
 
   .drawer {
     position: fixed;
@@ -170,6 +171,13 @@
     <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 200)">
     <input class="modal-input" id="modalInputUnit" type="text" placeholder="Unit (e.g. mg)">
     
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Release Type (Optional)</label>
+    <select class="modal-select" id="modalSelectRelease">
+        <option value="">None</option>
+        <option value="Instant-Release">Instant-Release</option>
+        <option value="Extended-Release">Extended-Release</option>
+    </select>
+
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
     <select class="modal-select" id="modalSelectMedium" onchange="checkOtherMedium(this.value)">
         <option value="Tablet">Tablet</option>
@@ -211,8 +219,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v6');
-    const savedLog = localStorage.getItem('med_log_v6');
+    const savedTimers = localStorage.getItem('med_timers_v7');
+    const savedLog = localStorage.getItem('med_log_v7');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -222,8 +230,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v6', JSON.stringify(timers));
-    localStorage.setItem('med_log_v6', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v7', JSON.stringify(timers));
+    localStorage.setItem('med_log_v7', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -240,6 +248,7 @@
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
     document.getElementById('modalSelectMedium').value = 'Tablet';
+    document.getElementById('modalSelectRelease').value = '';
     checkOtherMedium('Tablet');
     document.getElementById('modalOverlay').classList.add('show'); 
   }
@@ -251,6 +260,7 @@
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
     const unit = document.getElementById('modalInputUnit').value || 'units';
     const roa = document.getElementById('modalSelectRoa').value;
+    const release = document.getElementById('modalSelectRelease').value;
     
     let medium = document.getElementById('modalSelectMedium').value;
     if (medium === 'Other') {
@@ -269,6 +279,7 @@
       unit,
       roa,
       medium,
+      release,
       doseNum: modalDoseNum,
       startedAt: null,
       elapsed: 0,
@@ -397,10 +408,14 @@
     timers.forEach(t => {
       const card = document.createElement('div');
       card.className = `timer-card ${t.running ? 'running' : ''}`;
+      
+      let releaseBadgeHtml = t.release ? `<span class="badge release-badge">${t.release}</span>` : '';
+
       card.innerHTML = `
         <div class="name-row">
           <span class="med-title">${t.name}</span>
           <span class="badge">${t.dosageAmount}${t.unit}</span>
+          ${releaseBadgeHtml}
           <span class="badge medium-badge">${t.medium}</span>
           <span class="badge roa-badge">${t.roa}</span>
           <span class="badge dose-num-badge">Dose ${t.doseNum}</span>
