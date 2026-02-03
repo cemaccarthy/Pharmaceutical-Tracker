@@ -20,7 +20,6 @@
     --tag-text: #007bff;
     --dose-bg: #ffe7e7;
     --dose-text: #d93025;
-    /* Light Yellow for ROA */
     --roa-bg: #fff9db;
     --roa-text: #856404;
   }
@@ -32,7 +31,7 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px 20px 160px; /* Increased bottom padding for body */
+    padding: 20px 20px 160px;
   }
 
   .header { text-align: center; margin-bottom: 30px; }
@@ -50,8 +49,22 @@
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
-  .bulk-controls { display: none; margin-bottom: 10px; }
-  .bulk-controls.visible { display: block; }
+  /* Grouping Styles */
+  .timing-group { border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+  .group-header { 
+    background: #eee; 
+    padding: 12px 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    cursor: pointer; 
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .group-content { display: flex; flex-direction: column; gap: 16px; transition: max-height 0.3s ease-out; }
+  .group-content.collapsed { display: none; }
 
   .timer-card {
     background: var(--surface);
@@ -105,7 +118,7 @@
   .badge-red { background: var(--dose-bg); color: var(--dose-text); }
   .badge-yellow { background: var(--roa-bg); color: var(--roa-text); }
 
-  .add-btn-container { margin-bottom: 40px; } /* Ensures space above summary bar */
+  .add-btn-container { margin-top: 20px; margin-bottom: 40px; }
 
   .summary-bar {
     position: fixed;
@@ -160,10 +173,7 @@
 </div>
 
 <div class="container" id="container">
-  <div id="bulkControls" class="bulk-controls">
-    <button id="bulkBtn" class="btn btn-start" style="width:100%; font-weight:bold;">Start All New Timers</button>
-  </div>
-  
+  <div id="timersRoot"></div>
   <div class="add-btn-container">
     <button class="btn" style="width:100%; padding:15px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
   </div>
@@ -186,16 +196,27 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 style="font-family:'Playfair Display'; margin-bottom: 15px;">Add Medication</h2>
-    <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Advil)">
     
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medication Name</label>
+    <input class="modal-input" id="modalInput" type="text" placeholder="e.g. Escitalopram">
+    
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Timing Group (24-Hour Time)</label>
+    <input class="modal-input" id="modalInputTime" type="time" required>
+
     <div class="inline-group">
-      <input class="modal-input" id="modalInputDosage" type="number" placeholder="Amount">
-      <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)">
-        <option value="mg">mg</option>
-        <option value="μg">μg</option>
-        <option value="g">g</option>
-        <option value="Other">Other</option>
-      </select>
+      <div>
+        <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Amount</label>
+        <input class="modal-input" id="modalInputDosage" type="number" placeholder="Amount">
+      </div>
+      <div>
+        <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Unit</label>
+        <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)">
+          <option value="mg">mg</option>
+          <option value="μg">μg</option>
+          <option value="g">g</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
     </div>
     <input class="modal-input" id="modalInputOtherUnit" type="text" placeholder="Specify unit..." style="display:none;">
 
@@ -245,10 +266,11 @@
   let timers = [];
   let dailyLog = {}; 
   let modalDoseNum = 1;
+  let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v11');
-    const savedLog = localStorage.getItem('med_log_v11');
+    const savedTimers = localStorage.getItem('med_timers_v12');
+    const savedLog = localStorage.getItem('med_log_v12');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -258,8 +280,14 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v11', JSON.stringify(timers));
-    localStorage.setItem('med_log_v11', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v12', JSON.stringify(timers));
+    localStorage.setItem('med_log_v12', JSON.stringify(dailyLog));
+  }
+
+  function toggleGroup(time) {
+    if (collapsedGroups.has(time)) collapsedGroups.delete(time);
+    else collapsedGroups.add(time);
+    render();
   }
 
   function changeDoseNum(delta) {
@@ -283,6 +311,7 @@
     document.getElementById('modalSelectMedium').value = 'Tablet';
     document.getElementById('modalSelectUnit').value = 'mg';
     document.getElementById('modalSelectRelease').value = '';
+    document.getElementById('modalInputTime').value = '08:00';
     checkOtherMedium('Tablet');
     checkOtherUnit('mg');
     document.getElementById('modalOverlay').classList.add('show'); 
@@ -293,6 +322,7 @@
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
+    const timeGroup = document.getElementById('modalInputTime').value;
     const roa = document.getElementById('modalSelectRoa').value;
     const release = document.getElementById('modalSelectRelease').value;
     
@@ -301,7 +331,7 @@
     let medium = document.getElementById('modalSelectMedium').value;
     if (medium === 'Other') medium = document.getElementById('modalInputOtherMedium').value || 'Other';
 
-    if (!name) return;
+    if (!name || !timeGroup) return;
     if (!dailyLog[name]) dailyLog[name] = 0;
     dailyLog[name] += amount;
 
@@ -309,6 +339,7 @@
       id: Date.now(),
       name,
       dosageAmount: amount,
+      timeGroup,
       unit,
       roa,
       medium,
@@ -330,10 +361,10 @@
     document.getElementById('modalInputOtherMedium').value = '';
   }
 
-  function startAllNewTimers() {
+  function startGroupTimers(time) {
     const now = Date.now();
     timers.forEach(t => {
-      if (!t.running) {
+      if (t.timeGroup === time && !t.running) {
         t.running = true;
         t.startedAt = now;
       }
@@ -402,46 +433,62 @@
   }
 
   function render() {
-    const container = document.getElementById('container');
-    const bulkDiv = document.getElementById('bulkControls');
-    const bulkBtn = document.getElementById('bulkBtn');
-    const addBtnContainer = container.querySelector('.add-btn-container');
-    container.querySelectorAll('.timer-card').forEach(el => el.remove());
+    const root = document.getElementById('timersRoot');
+    root.innerHTML = '';
 
-    const hasStoppedTimers = timers.some(t => !t.running);
-    if (timers.length > 1 && hasStoppedTimers) {
-      bulkDiv.classList.add('visible');
-      bulkBtn.onclick = startAllNewTimers;
-    } else {
-      bulkDiv.classList.remove('visible');
-    }
-
+    // Group timers by time
+    const groups = {};
     timers.forEach(t => {
-      const card = document.createElement('div');
-      card.className = `timer-card ${t.running ? 'running' : ''}`;
-      let releaseBadgeHtml = t.release ? `<span class="badge">${t.release}</span>` : '';
-      card.innerHTML = `
-        <div class="name-row">
-          <span class="med-title">${t.name}</span>
-          <button style="border:none; background:none; color:#ddd; font-size: 1.2rem; margin-left: auto;" onclick="deleteTimer(${t.id})">✕</button>
+      if (!groups[t.timeGroup]) groups[t.timeGroup] = [];
+      groups[t.timeGroup].push(t);
+    });
+
+    // Sort group times
+    const sortedTimes = Object.keys(groups).sort();
+
+    sortedTimes.forEach(time => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'timing-group';
+      
+      const isCollapsed = collapsedGroups.has(time);
+      const groupTimers = groups[time];
+      const hasStopped = groupTimers.some(t => !t.running);
+
+      groupDiv.innerHTML = `
+        <div class="group-header" onclick="toggleGroup('${time}')">
+          <span>🕒 ${time} (${groupTimers.length} Meds)</span>
+          <div style="display:flex; gap:10px; align-items:center;">
+            ${hasStopped ? `<button class="btn btn-start" style="padding:4px 8px; font-size:0.55rem;" onclick="event.stopPropagation(); startGroupTimers('${time}')">Start All</button>` : ''}
+            <span>${isCollapsed ? '▼' : '▲'}</span>
+          </div>
         </div>
-        <div class="name-row" style="margin-top: -5px; gap: 4px;">
-          <span class="badge">${t.dosageAmount}${t.unit}</span>
-          <span class="badge">${t.medium}</span>
-          ${releaseBadgeHtml}
-        </div>
-        <div class="name-row" style="margin-top: -8px; gap: 4px;">
-          <span class="badge badge-yellow">${t.roa}</span>
-          <span class="badge badge-red">Dose ${t.doseNum}</span>
-        </div>
-        <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
-        <div class="controls">
-          ${t.running ? 
-            `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop</button>` : 
-            `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
+        <div class="group-content ${isCollapsed ? 'collapsed' : ''}">
+          ${groupTimers.map(t => `
+            <div class="timer-card ${t.running ? 'running' : ''}">
+              <div class="name-row">
+                <span class="med-title">${t.name}</span>
+                <button style="border:none; background:none; color:#ddd; font-size: 1.2rem; margin-left: auto;" onclick="deleteTimer(${t.id})">✕</button>
+              </div>
+              <div class="name-row" style="margin-top: -5px; gap: 4px;">
+                <span class="badge">${t.dosageAmount}${t.unit}</span>
+                <span class="badge">${t.medium}</span>
+                ${t.release ? `<span class="badge">${t.release}</span>` : ''}
+              </div>
+              <div class="name-row" style="margin-top: -8px; gap: 4px;">
+                <span class="badge badge-yellow">${t.roa}</span>
+                <span class="badge badge-red">Dose ${t.doseNum}</span>
+              </div>
+              <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
+              <div class="controls">
+                ${t.running ? 
+                  `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop</button>` : 
+                  `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
+              </div>
+            </div>
+          `).join('')}
         </div>
       `;
-      container.insertBefore(card, addBtnContainer);
+      root.appendChild(groupDiv);
     });
   }
 
