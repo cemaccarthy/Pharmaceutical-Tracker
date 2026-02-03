@@ -11,13 +11,10 @@
   :root {
     --bg: #f8f9fa;
     --surface: #ffffff;
-    --surface-hover: #f1f3f5;
     --accent: #2dbb5d; 
-    --accent-dim: rgba(45, 187, 93, 0.1);
     --text: #000000;
     --text-muted: #555555;
     --danger: #d93025;
-    --danger-dim: rgba(217, 48, 37, 0.08);
     --border: #dee2e6;
   }
 
@@ -28,12 +25,12 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 40px 20px 80px;
+    padding: 20px 20px 120px;
   }
 
-  .header { text-align: center; margin-bottom: 44px; }
-  .header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--text); }
-  .header p { color: var(--text-muted); font-size: 0.82rem; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header { text-align: center; margin-bottom: 30px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
+  .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
@@ -41,70 +38,85 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 24px 22px 20px;
-    transition: transform 0.2s ease;
+    padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
   .timer-card.running { border-color: var(--accent); border-width: 2px; }
-  .timer-card.stopped { border-color: var(--danger); }
 
-  .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text); }
-  .med-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; flex: 1; }
-
-  .delete-btn { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 4px; }
-  .delete-btn:hover { color: var(--danger); }
+  .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; }
 
   .time-display { 
     font-family: 'DM Mono', monospace; 
-    font-size: 3rem; 
-    font-weight: 500; 
+    font-size: 2.8rem; 
     text-align: center; 
-    color: var(--text); 
-    margin: 15px 0 25px; 
+    margin: 10px 0 20px; 
+    color: var(--text);
   }
   .running .time-display { color: var(--accent); }
 
-  .controls { display: flex; justify-content: center; gap: 12px; }
+  .controls { display: flex; justify-content: center; gap: 10px; }
   .btn { 
     font-family: 'DM Mono', monospace; 
-    font-size: 0.75rem; 
-    font-weight: 600; 
+    font-size: 0.7rem; 
     text-transform: uppercase; 
     border: 1.5px solid; 
     border-radius: 8px; 
-    padding: 10px 20px; 
+    padding: 8px 16px; 
     cursor: pointer; 
     background: white;
+    color: var(--text);
   }
   .btn-start { border-color: var(--accent); color: var(--accent); }
-  .btn-start:hover { background: var(--accent-dim); }
   .btn-stop { border-color: var(--danger); color: var(--danger); }
   .btn-reset { border-color: #777; color: #777; }
+  .btn-danger-fill { background: var(--danger); color: white; border: none; }
 
-  .add-btn { 
-    background: var(--surface); 
-    border: 1px dashed var(--border); 
-    border-radius: 16px; 
-    color: var(--text-muted); 
-    padding: 20px; 
-    font-family: 'DM Mono', monospace;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-    font-size: 0.82rem;
-    text-transform: uppercase;
+  .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; background: #eee; font-weight: 600; color: #333; }
+
+  /* Drawer Styles */
+  .drawer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+  }
+  .drawer.open { transform: translateY(0); }
+  .drawer-handle {
+    width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px;
+  }
+  .total-row {
+    display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: black;
   }
 
-  .badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 12px; margin-left: 5px; font-weight: 600; text-transform: uppercase; vertical-align: middle; }
-  .dosage-badge { background: #eee; color: #333; }
-  .roa-badge { background: #e7f3ff; color: #007bff; }
+  .summary-bar {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: black;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 100; justify-content: center; align-items: center; }
+  /* Modal Light Theme */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-  .modal h2 { margin-bottom: 20px; color: black; font-family: 'Playfair Display', serif; }
-  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: 'DM Mono', monospace; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; }
+  .modal-input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; }
 </style>
 </head>
 <body>
@@ -115,43 +127,59 @@
 </div>
 
 <div class="container" id="container">
-  <button class="add-btn" onclick="openModal()">+ Add Medication</button>
+  <button class="btn btn-reset" style="width:100%; padding:15px; margin-bottom:10px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
+</div>
+
+<div class="summary-bar" onclick="toggleDrawer()">
+  View Cumulative Totals 📊
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-handle" onclick="toggleDrawer()"></div>
+  <h2 style="font-family:'Playfair Display'; margin-bottom:5px; color: black;">Dose Tracking</h2>
+  <p style="font-size: 0.7rem; color: #777; margin-bottom: 20px; text-transform: uppercase;">Totals persist until manually cleared</p>
+  
+  <div id="totalsList">
+    </div>
+  
+  <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+    <button class="btn btn-danger-fill" style="width:100%; padding: 12px;" onclick="confirmClearTotals()">Reset All Totals</button>
+    <button class="btn btn-reset" style="width:100%; padding: 12px; color: black;" onclick="toggleDrawer()">Close</button>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2 id="modalTitle">Add Medication</h2>
-    <div id="modalContent">
-        <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Ibuprofen)">
-        <input class="modal-input" id="modalInputDosage" type="text" placeholder="Dosage (e.g. 200mg)">
-        <select class="modal-select" id="modalSelectRoa">
-            <option value="Oral">Oral</option>
-            <option value="Sublingual">Sublingual</option>
-            <option value="Topical">Topical</option>
-            <option value="Inhalation">Inhalation</option>
-            <option value="Injection">Injection</option>
-        </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-reset" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-start" onclick="saveNewTimer()">Add</button>
+    <h2 style="font-family:'Playfair Display'; margin-bottom: 15px;">Add Medication</h2>
+    <input class="modal-input" id="modalInput" type="text" placeholder="Name (e.g. Tylenol)">
+    <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 500)">
+    <input class="modal-input" id="modalInputUnit" type="text" placeholder="Unit (e.g. mg)">
+    <div style="display:flex; gap:10px; margin-top:10px">
+      <button class="btn btn-reset" style="flex:1; color: black;" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-start" style="flex:1" onclick="saveNewTimer()">Add</button>
     </div>
   </div>
 </div>
 
 <script>
   let timers = [];
+  let dailyLog = {}; 
 
   function loadData() {
-    const saved = localStorage.getItem('med_tracker_v2');
-    if (saved) {
-      timers = JSON.parse(saved);
+    const savedTimers = localStorage.getItem('med_timers_v4');
+    const savedLog = localStorage.getItem('med_log_v4');
+
+    if (savedLog) dailyLog = JSON.parse(savedLog);
+    if (savedTimers) {
+      timers = JSON.parse(savedTimers);
       render();
     }
+    updateTotalsUI();
   }
 
   function saveData() {
-    localStorage.setItem('med_tracker_v2', JSON.stringify(timers));
+    localStorage.setItem('med_timers_v4', JSON.stringify(timers));
+    localStorage.setItem('med_log_v4', JSON.stringify(dailyLog));
   }
 
   function openModal() { document.getElementById('modalOverlay').classList.add('show'); }
@@ -159,33 +187,23 @@
 
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
-    const dosage = document.getElementById('modalInputDosage').value || 'N/A';
-    const roa = document.getElementById('modalSelectRoa').value;
-
+    const amount = document.getElementById('modalInputDosage').value || 0;
+    const unit = document.getElementById('modalInputUnit').value || 'units';
     if (!name) return;
-
     timers.push({
       id: Date.now(),
       name,
-      dosage,
-      roa,
+      dosageAmount: parseFloat(amount),
+      unit,
       startedAt: null,
       elapsed: 0,
       running: false
     });
-
     saveData();
     render();
     closeModal();
-    
-    // Reset inputs
     document.getElementById('modalInput').value = '';
     document.getElementById('modalInputDosage').value = '';
-  }
-
-  function getElapsed(timer) {
-    if (!timer.running) return timer.elapsed;
-    return timer.elapsed + (Date.now() - timer.startedAt);
   }
 
   function startTimer(id) {
@@ -196,17 +214,26 @@
     render();
   }
 
+  function logDose(timer) {
+    if (!dailyLog[timer.name]) dailyLog[timer.name] = 0;
+    dailyLog[timer.name] += timer.dosageAmount;
+    saveData();
+    updateTotalsUI();
+  }
+
   function stopTimer(id) {
     const t = timers.find(t => t.id === id);
-    t.elapsed = getElapsed(t);
+    t.elapsed += (Date.now() - t.startedAt);
     t.running = false;
     t.startedAt = null;
+    logDose(t);
     saveData();
     render();
   }
 
   function resetTimer(id) {
     const t = timers.find(t => t.id === id);
+    if (t.running) stopTimer(id);
     t.elapsed = 0;
     t.running = false;
     t.startedAt = null;
@@ -215,9 +242,19 @@
   }
 
   function deleteTimer(id) {
-    timers = timers.filter(t => t.id !== id);
-    saveData();
-    render();
+    if(confirm("Remove this medication?")) {
+        timers = timers.filter(t => t.id !== id);
+        saveData();
+        render();
+    }
+  }
+
+  function confirmClearTotals() {
+    if (confirm("Are you sure you want to clear all cumulative dose totals? This cannot be undone.")) {
+        dailyLog = {};
+        saveData();
+        updateTotalsUI();
+    }
   }
 
   function formatTime(ms) {
@@ -229,9 +266,28 @@
     return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
   }
 
+  function toggleDrawer() {
+    document.getElementById('drawer').classList.toggle('open');
+  }
+
+  function updateTotalsUI() {
+    const list = document.getElementById('totalsList');
+    list.innerHTML = '';
+    const entries = Object.entries(dailyLog);
+    if (entries.length === 0) {
+        list.innerHTML = '<p style="color:#888; text-align: center; padding: 20px;">No doses logged yet.</p>';
+        return;
+    }
+    entries.forEach(([name, total]) => {
+        const timer = timers.find(t => t.name === name);
+        const unit = timer ? timer.unit : '';
+        list.innerHTML += `<div class="total-row"><span>${name}</span><strong>${total} ${unit}</strong></div>`;
+    });
+  }
+
   function render() {
     const container = document.getElementById('container');
-    const addBtn = container.querySelector('.add-btn');
+    const addBtn = container.querySelector('.btn-reset[onclick="openModal()"]');
     container.querySelectorAll('.timer-card').forEach(el => el.remove());
 
     timers.forEach(t => {
@@ -240,15 +296,14 @@
       card.innerHTML = `
         <div class="name-row">
           <span class="med-title">${t.name}</span>
-          <span class="badge dosage-badge">${t.dosage}</span>
-          <span class="badge roa-badge">${t.roa}</span>
-          <button class="delete-btn" onclick="deleteTimer(${t.id})">✕</button>
+          <span class="badge">${t.dosageAmount} ${t.unit}</span>
+          <button style="border:none; background:none; color:#ddd; font-size: 1rem;" onclick="deleteTimer(${t.id})">✕</button>
         </div>
-        <div class="time-display" id="time-${t.id}">${formatTime(getElapsed(t))}</div>
+        <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
         <div class="controls">
           ${t.running ? 
-            `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop</button>` : 
-            `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
+            `<button class="btn btn-stop" onclick="stopTimer(${t.id})">Stop & Log</button>` : 
+            `<button class="btn btn-start" onclick="startTimer(${t.id})">Start Timer</button>`}
           <button class="btn btn-reset" onclick="resetTimer(${t.id})">Reset</button>
         </div>
       `;
@@ -260,7 +315,7 @@
     timers.forEach(t => {
       if (t.running) {
         const el = document.getElementById(`time-${t.id}`);
-        if (el) el.textContent = formatTime(getElapsed(t));
+        if (el) el.textContent = formatTime(t.elapsed + (Date.now() - t.startedAt));
       }
     });
   }, 1000);
@@ -268,4 +323,4 @@
   loadData();
 </script>
 </body>
-</html>
+</html>/html>
