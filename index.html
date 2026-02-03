@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="icon.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,11 +18,14 @@
     --border: #dee2e6;
     --tag-bg: #e7f3ff;
     --tag-text: #007bff;
+    /* Light Red for Dose Tag */
+    --dose-bg: #ffe7e7;
+    --dose-text: #d93025;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  </head> body {
+  body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
@@ -87,7 +89,6 @@
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
   .btn-reset-small { font-size: 0.6rem; padding: 4px 8px; border-color: #777; color: #777; }
 
-  /* Bigger, breathable tags */
   .badge { 
     font-size: 0.75rem; 
     padding: 6px 12px; 
@@ -98,6 +99,11 @@
     text-transform: uppercase;
     margin: 4px 2px;
     display: inline-block;
+  }
+
+  .badge-red {
+    background: var(--dose-bg);
+    color: var(--dose-text);
   }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
@@ -241,8 +247,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v9');
-    const savedLog = localStorage.getItem('med_log_v9');
+    const savedTimers = localStorage.getItem('med_timers_v10');
+    const savedLog = localStorage.getItem('med_log_v10');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -252,8 +258,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v9', JSON.stringify(timers));
-    localStorage.setItem('med_log_v9', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v10', JSON.stringify(timers));
+    localStorage.setItem('med_log_v10', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -434,10 +440,12 @@
         </div>
         <div class="name-row" style="margin-top: -5px; gap: 4px;">
           <span class="badge">${t.dosageAmount}${t.unit}</span>
-          ${releaseBadgeHtml}
           <span class="badge">${t.medium}</span>
+          ${releaseBadgeHtml}
+        </div>
+        <div class="name-row" style="margin-top: -8px; gap: 4px;">
           <span class="badge">${t.roa}</span>
-          <span class="badge">Dose ${t.doseNum}</span>
+          <span class="badge badge-red">Dose ${t.doseNum}</span>
         </div>
         <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
         <div class="controls">
