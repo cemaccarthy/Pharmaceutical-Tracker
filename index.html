@@ -43,6 +43,9 @@
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
+  .bulk-controls { display: none; margin-bottom: 10px; }
+  .bulk-controls.visible { display: block; }
+
   .timer-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -140,6 +143,9 @@
 </div>
 
 <div class="container" id="container">
+  <div id="bulkControls" class="bulk-controls">
+    <button id="bulkBtn" class="btn btn-start" style="width:100%; font-weight:bold;">Start All New Timers</button>
+  </div>
   <button class="btn" style="width:100%; padding:15px; margin-bottom:10px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
 </div>
 
@@ -280,6 +286,18 @@
     document.getElementById('modalInputOtherMedium').value = '';
   }
 
+  function startAllNewTimers() {
+    const now = Date.now();
+    timers.forEach(t => {
+      if (!t.running) {
+        t.running = true;
+        t.startedAt = now;
+      }
+    });
+    saveData();
+    render();
+  }
+
   function startTimer(id) {
     const t = timers.find(t => t.id === id);
     t.running = true;
@@ -362,8 +380,19 @@
 
   function render() {
     const container = document.getElementById('container');
+    const bulkDiv = document.getElementById('bulkControls');
+    const bulkBtn = document.getElementById('bulkBtn');
     const addBtn = container.querySelector('.btn[onclick="openModal()"]');
     container.querySelectorAll('.timer-card').forEach(el => el.remove());
+
+    const hasStoppedTimers = timers.some(t => !t.running);
+
+    if (timers.length > 1 && hasStoppedTimers) {
+      bulkDiv.classList.add('visible');
+      bulkBtn.onclick = startAllNewTimers;
+    } else {
+      bulkDiv.classList.remove('visible');
+    }
 
     timers.forEach(t => {
       const card = document.createElement('div');
