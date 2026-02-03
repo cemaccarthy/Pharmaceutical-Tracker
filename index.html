@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,32 +27,31 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  </head> body {
+ </head> body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px 10px 160px; /* Reduced side padding for tighter fit */
+    padding: 20px 10px 160px;
   }
 
   .header { text-align: center; margin-bottom: 20px; }
   .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
   .header p { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
 
-  /* Modified for no-swipe layout */
   .tab-container {
     display: flex;
     justify-content: center;
     gap: 4px;
     margin-bottom: 25px;
     padding-bottom: 10px;
-    flex-wrap: wrap; /* Allows wrapping if screen is very narrow, but keeps them together */
+    flex-wrap: wrap;
   }
   .tab {
     padding: 8px 10px;
     background: #e0e0e0;
     border-radius: 15px;
-    font-size: 0.58rem; /* Smaller font to ensure all-on-screen */
+    font-size: 0.58rem; 
     font-weight: 700;
     text-transform: uppercase;
     white-space: nowrap;
@@ -197,7 +196,7 @@
   <div class="tab-container" id="tabContainer">
     <div class="tab active" data-name="All Medications" onclick="setTab('All Medications')">All</div>
     <div class="tab" data-name="Prophylactic" onclick="setTab('Prophylactic')">Prophylactic</div>
-    <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited</div>
+    <div class="tab" data-name="Limited Release" onclick="setTab('Limited Release')">Limited Release</div>
     <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">PRN</div>
     <div class="tab" data-name=":)" onclick="setTab(':)')">:)</div>
   </div>
@@ -232,7 +231,7 @@
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Tab Groups (Select Multiple)</label>
     <div class="checkbox-group">
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Prophylactic"> Prophylactic</label>
-      <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Duration"> Limited</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Release"> Limited Release</label>
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Pro Re Nata"> PRN</label>
       <label class="check-item"><input type="checkbox" name="tabGrp" value=":)"> :)</label>
     </div>
@@ -305,8 +304,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v20');
-    const savedLog = localStorage.getItem('med_log_v20');
+    const savedTimers = localStorage.getItem('med_timers_v21');
+    const savedLog = localStorage.getItem('med_log_v21');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -314,8 +313,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v20', JSON.stringify(timers));
-    localStorage.setItem('med_log_v20', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v21', JSON.stringify(timers));
+    localStorage.setItem('med_log_v21', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
