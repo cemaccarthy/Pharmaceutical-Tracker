@@ -44,20 +44,21 @@
     overflow-x: auto;
     gap: 8px;
     margin-bottom: 25px;
-    padding-bottom: 5px;
+    padding-bottom: 10px;
     -webkit-overflow-scrolling: touch;
   }
   .tab-container::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 8px 16px;
-    background: #eee;
+    padding: 10px 18px;
+    background: #e0e0e0;
     border-radius: 20px;
     font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
     white-space: nowrap;
     cursor: pointer;
-    border: 1px solid transparent;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
   }
   .tab.active {
     background: black;
@@ -168,8 +169,20 @@
   .modal-overlay.show { display: flex; }
   .modal { background: white; border-radius: 20px; padding: 25px; width: 95%; max-width: 420px; color: black; overflow-y: auto; max-height: 90vh; }
   
+  /* UNIFIED INPUT STYLES */
   .modal-input, .modal-select { 
-    width: 100%; height: 48px; padding: 0 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 0.9rem; background: white; display: block;
+    width: 100%; 
+    height: 48px; 
+    padding: 0 12px; 
+    margin-bottom: 12px; 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    font-family: 'DM Mono', monospace; 
+    font-size: 0.9rem; 
+    background: white; 
+    display: block;
+    -webkit-appearance: none;
+    line-height: 48px; /* For time input centering */
   }
 
   .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
@@ -193,11 +206,11 @@
 
 <div class="container" id="container">
   <div class="tab-container" id="tabContainer">
-    <div class="tab active" onclick="setTab('All Medications')">All Medications</div>
-    <div class="tab" onclick="setTab('Prophylactic')">Prophylactic</div>
-    <div class="tab" onclick="setTab('Limited Duration')">Limited Duration</div>
-    <div class="tab" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
-    <div class="tab" onclick="setTab('Recreation')">Recreation</div>
+    <div class="tab active" data-name="All Medications" onclick="setTab('All Medications')">All Medications</div>
+    <div class="tab" data-name="Prophylactic" onclick="setTab('Prophylactic')">Prophylactic</div>
+    <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited Duration</div>
+    <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
+    <div class="tab" data-name="Recreation" onclick="setTab('Recreation')">Recreation</div>
   </div>
 
   <div id="timersRoot"></div>
@@ -245,16 +258,15 @@
       </div>
       <div>
         <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Unit</label>
-        <select class="modal-select" id="modalSelectUnit" onchange="checkOtherUnit(this.value)" style="margin-bottom:0;">
-          <option value="mg">mg</option><option value="μg">μg</option><option value="g">g</option><option value="Other">Other</option>
+        <select class="modal-select" id="modalSelectUnit" style="margin-bottom:0;">
+          <option value="mg">mg</option><option value="μg">μg</option><option value="g">g</option>
         </select>
       </div>
     </div>
-    <input class="modal-input" id="modalInputOtherUnit" type="text" placeholder="Specify unit..." style="display:none;">
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
     <select class="modal-select" id="modalSelectMedium">
-        <option value="Tablet">Tablet</option><option value="Capsule">Capsule</option><option value="Caplet">Caplet</option><option value="Lozenge">Lozenge</option><option value="Nasal Spray">Nasal Spray</option>
+        <option value="Tablet">Tablet</option><option value="Capsule">Capsule</option><option value="Caplet">Caplet</option><option value="Lozenge">Lozenge</option>
     </select>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
@@ -284,8 +296,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v15');
-    const savedLog = localStorage.getItem('med_log_v15');
+    const savedTimers = localStorage.getItem('med_timers_v16');
+    const savedLog = localStorage.getItem('med_log_v16');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -293,14 +305,14 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v15', JSON.stringify(timers));
-    localStorage.setItem('med_log_v15', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v16', JSON.stringify(timers));
+    localStorage.setItem('med_log_v16', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
     currentTab = tabName;
     document.querySelectorAll('.tab').forEach(t => {
-      t.classList.toggle('active', t.innerText === tabName);
+      t.classList.toggle('active', t.getAttribute('data-name') === tabName);
     });
     render();
   }
@@ -326,10 +338,7 @@
     const timeGroup = document.getElementById('modalInputTime').value;
     const selectedTabs = Array.from(document.querySelectorAll('input[name="tabGrp"]:checked')).map(c => c.value);
 
-    if (!name || !timeGroup || selectedTabs.length === 0) {
-      alert("Please enter a name, time, and at least one tab group.");
-      return;
-    }
+    if (!name || !timeGroup || selectedTabs.length === 0) return;
 
     if (!dailyLog[name]) dailyLog[name] = 0;
     dailyLog[name] += amount;
@@ -379,7 +388,6 @@
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
 
-    // Filter timers based on tab
     let filtered = timers.filter(t => {
       if (currentTab === 'All Medications') {
         return t.tabs.some(tab => tab !== 'Recreation');
@@ -461,6 +469,12 @@
       const t = timers.find(item => item.name === name);
       list.innerHTML += `<div class="total-row"><strong>${name}</strong>: ${total} ${t ? t.unit : 'units'}</div>`;
     });
+  }
+
+  function confirmClearTotals() {
+    if (confirm("Clear all totals?")) {
+      dailyLog = {}; saveData(); updateTotalsUI();
+    }
   }
 
   setInterval(() => {
