@@ -213,16 +213,20 @@
 
   function saveNewTimer() {
     const name = document.getElementById('modalInput').value;
-    const amount = document.getElementById('modalInputDosage').value || 0;
+    const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
     const unit = document.getElementById('modalInputUnit').value || 'units';
     const roa = document.getElementById('modalSelectRoa').value;
 
     if (!name) return;
 
+    // ADDED LOGIC: Immediately track the dose when added
+    if (!dailyLog[name]) dailyLog[name] = 0;
+    dailyLog[name] += amount;
+
     timers.push({
       id: Date.now(),
       name,
-      dosageAmount: parseFloat(amount),
+      dosageAmount: amount,
       unit,
       roa,
       doseNum: modalDoseNum,
@@ -233,9 +237,9 @@
 
     saveData();
     render();
+    updateTotalsUI();
     closeModal();
     
-    // Clear fields
     document.getElementById('modalInput').value = '';
     document.getElementById('modalInputDosage').value = '';
     document.getElementById('modalInputUnit').value = '';
@@ -244,10 +248,7 @@
   function logDose(timer) {
     if (!dailyLog[timer.name]) dailyLog[timer.name] = 0;
     dailyLog[timer.name] += timer.dosageAmount;
-    
-    // Increment the dose number for the next round
     timer.doseNum++; 
-    
     saveData();
     updateTotalsUI();
   }
@@ -273,7 +274,7 @@
   function resetTimer(id) {
     const t = timers.find(t => t.id === id);
     if (t.running) stopTimer(id);
-    else logDose(t); // If stopped, just log the dose manually
+    else logDose(t); 
     t.elapsed = 0;
     t.running = false;
     t.startedAt = null;
