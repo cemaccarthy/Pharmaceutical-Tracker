@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="icon.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,7 +26,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  </head> body {
+  body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
@@ -64,7 +63,7 @@
     background: black;
     color: white;
   }
-  .tab.hidden { display: none; }
+  .tab.hidden { display: none !important; }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
@@ -171,18 +170,7 @@
   .modal { background: white; border-radius: 20px; padding: 25px; width: 95%; max-width: 420px; color: black; overflow-y: auto; max-height: 90vh; }
   
   .modal-input, .modal-select { 
-    width: 100%; 
-    height: 48px; 
-    padding: 0 12px; 
-    margin-bottom: 12px; 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    font-family: 'DM Mono', monospace; 
-    font-size: 0.9rem; 
-    background: white; 
-    display: block;
-    -webkit-appearance: none;
-    line-height: 48px;
+    width: 100%; height: 48px; padding: 0 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 0.9rem; background: white; display: block; -webkit-appearance: none; line-height: 48px;
   }
 
   .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
@@ -265,9 +253,15 @@
     </div>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
-    <select class="modal-select" id="modalSelectMedium">
-        <option value="Tablet">Tablet</option><option value="Capsule">Capsule</option><option value="Caplet">Caplet</option><option value="Lozenge">Lozenge</option>
+    <select class="modal-select" id="modalSelectMedium" onchange="checkOtherMedium(this.value)">
+        <option value="Tablet">Tablet</option>
+        <option value="Capsule">Capsule</option>
+        <option value="Caplet">Caplet</option>
+        <option value="Lozenge">Lozenge</option>
+        <option value="Pouch">Pouch</option>
+        <option value="Other">Other</option>
     </select>
+    <input class="modal-input" id="modalInputOtherMedium" type="text" placeholder="Specify other medium..." style="display:none;">
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
     <select class="modal-select" id="modalSelectRoa">
@@ -303,8 +297,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v17');
-    const savedLog = localStorage.getItem('med_log_v17');
+    const savedTimers = localStorage.getItem('med_timers_v18');
+    const savedLog = localStorage.getItem('med_log_v18');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -312,8 +306,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v17', JSON.stringify(timers));
-    localStorage.setItem('med_log_v17', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v18', JSON.stringify(timers));
+    localStorage.setItem('med_log_v18', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
@@ -322,6 +316,11 @@
       t.classList.toggle('active', t.getAttribute('data-name') === tabName);
     });
     render();
+  }
+
+  function checkOtherMedium(val) {
+    const otherInput = document.getElementById('modalInputOtherMedium');
+    otherInput.style.display = (val === 'Other') ? 'block' : 'none';
   }
 
   function changeDoseNum(delta) {
@@ -335,17 +334,15 @@
     document.getElementById('modalInputTime').value = '08:00';
     document.getElementById('modalSelectUnit').value = 'mg';
     document.getElementById('modalSelectMedium').value = 'Tablet';
+    document.getElementById('modalInputOtherMedium').value = '';
+    document.getElementById('modalInputOtherMedium').style.display = 'none';
     document.getElementById('modalSelectRoa').value = 'Oral';
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
     document.querySelectorAll('input[name="tabGrp"]').forEach(c => c.checked = false);
   }
 
-  function openModal() { 
-    resetModal();
-    document.getElementById('modalOverlay').classList.add('show'); 
-  }
-  
+  function openModal() { resetModal(); document.getElementById('modalOverlay').classList.add('show'); }
   function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
   function saveNewTimer() {
@@ -353,6 +350,9 @@
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
     const timeGroup = document.getElementById('modalInputTime').value;
     const selectedTabs = Array.from(document.querySelectorAll('input[name="tabGrp"]:checked')).map(c => c.value);
+    
+    let medium = document.getElementById('modalSelectMedium').value;
+    if (medium === 'Other') medium = document.getElementById('modalInputOtherMedium').value || 'Other';
 
     if (!name || !timeGroup || selectedTabs.length === 0) return;
 
@@ -367,7 +367,7 @@
       tabs: selectedTabs,
       unit: document.getElementById('modalSelectUnit').value,
       roa: document.getElementById('modalSelectRoa').value,
-      medium: document.getElementById('modalSelectMedium').value,
+      medium: medium,
       doseNum: modalDoseNum,
       startedAt: null,
       elapsed: 0,
@@ -385,13 +385,6 @@
         const t = timers.find(item => item.id === id);
         if(t) delete dailyLog[t.name];
         timers = timers.filter(item => item.id !== id);
-        
-        // If the only recreation med was deleted, switch tab back to All
-        const hasRecreation = timers.some(t => t.tabs.includes('Recreation'));
-        if (!hasRecreation && currentTab === 'Recreation') {
-            setTab('All Medications');
-        }
-
         saveData();
         render();
         updateTotalsUI();
@@ -411,13 +404,15 @@
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
 
-    // Handle Recreation Tab Visibility
+    // Logic to show/hide recreation tab based on medication list
     const hasRecreation = timers.some(t => t.tabs.includes('Recreation'));
     document.getElementById('recreationTab').classList.toggle('hidden', !hasRecreation);
+    if (!hasRecreation && currentTab === 'Recreation') setTab('All Medications');
 
     let filtered = timers.filter(t => {
       if (currentTab === 'All Medications') {
-        return t.tabs.some(tab => tab !== 'Recreation');
+        // Exclude ANY med that has "Recreation" in its tags
+        return !t.tabs.includes('Recreation');
       }
       return t.tabs.includes(currentTab);
     });
@@ -500,9 +495,7 @@
 
   function confirmClearTotals() {
     if (confirm("Clear all cumulative dose totals?")) {
-        dailyLog = {};
-        saveData();
-        updateTotalsUI();
+        dailyLog = {}; saveData(); updateTotalsUI();
     }
   }
 
