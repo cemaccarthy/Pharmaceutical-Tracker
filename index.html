@@ -27,7 +27,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
- </head> body {
+  </head> body {
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
@@ -64,7 +64,6 @@
     background: black;
     color: white;
   }
-  .tab.hidden { display: none !important; }
 
   .container { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
@@ -199,7 +198,7 @@
     <div class="tab" data-name="Prophylactic" onclick="setTab('Prophylactic')">Prophylactic</div>
     <div class="tab" data-name="Limited Duration" onclick="setTab('Limited Duration')">Limited Duration</div>
     <div class="tab" data-name="Pro Re Nata" onclick="setTab('Pro Re Nata')">Pro Re Nata</div>
-    <div class="tab hidden" id="recreationTab" data-name="Recreation" onclick="setTab('Recreation')">Recreation</div>
+    <div class="tab" data-name=":)" onclick="setTab(':)')">:)</div>
   </div>
 
   <div id="timersRoot"></div>
@@ -234,7 +233,7 @@
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Prophylactic"> Prophylactic</label>
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Limited Duration"> Limited Duration</label>
       <label class="check-item"><input type="checkbox" name="tabGrp" value="Pro Re Nata"> Pro Re Nata</label>
-      <label class="check-item"><input type="checkbox" name="tabGrp" value="Recreation"> Recreation</label>
+      <label class="check-item"><input type="checkbox" name="tabGrp" value=":)"> :)</label>
     </div>
 
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Timing Group</label>
@@ -298,8 +297,8 @@
   let collapsedGroups = new Set();
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v18');
-    const savedLog = localStorage.getItem('med_log_v18');
+    const savedTimers = localStorage.getItem('med_timers_v19');
+    const savedLog = localStorage.getItem('med_log_v19');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) timers = JSON.parse(savedTimers);
     render();
@@ -307,8 +306,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v18', JSON.stringify(timers));
-    localStorage.setItem('med_log_v18', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v19', JSON.stringify(timers));
+    localStorage.setItem('med_log_v19', JSON.stringify(dailyLog));
   }
 
   function setTab(tabName) {
@@ -405,15 +404,9 @@
     const root = document.getElementById('timersRoot');
     root.innerHTML = '';
 
-    // Logic to show/hide recreation tab based on medication list
-    const hasRecreation = timers.some(t => t.tabs.includes('Recreation'));
-    document.getElementById('recreationTab').classList.toggle('hidden', !hasRecreation);
-    if (!hasRecreation && currentTab === 'Recreation') setTab('All Medications');
-
     let filtered = timers.filter(t => {
       if (currentTab === 'All Medications') {
-        // Exclude ANY med that has "Recreation" in its tags
-        return !t.tabs.includes('Recreation');
+        return !t.tabs.includes(':)');
       }
       return t.tabs.includes(currentTab);
     });
@@ -512,4 +505,4 @@
   loadData();
 </script>
 </body>
-</html>
+</html>/html>
