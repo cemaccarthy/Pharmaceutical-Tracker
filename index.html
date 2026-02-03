@@ -84,6 +84,7 @@
   .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; background: #eee; font-weight: 600; color: #333; text-transform: uppercase; }
   .roa-badge { background: #e7f3ff; color: #007bff; }
   .dose-num-badge { background: #fff3cd; color: #856404; }
+  .medium-badge { background: #f0f0f0; color: #555; }
 
   .drawer {
     position: fixed;
@@ -122,7 +123,7 @@
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
   .modal-overlay.show { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; }
+  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
   .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
   
   .stepper-row { display: flex; align-items: center; margin-bottom: 15px; }
@@ -163,6 +164,17 @@
     <input class="modal-input" id="modalInputDosage" type="number" placeholder="Dose amount (e.g. 200)">
     <input class="modal-input" id="modalInputUnit" type="text" placeholder="Unit (e.g. mg)">
     
+    <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Medium</label>
+    <select class="modal-select" id="modalSelectMedium" onchange="checkOtherMedium(this.value)">
+        <option value="Tablet">Tablet</option>
+        <option value="Capsule">Capsule</option>
+        <option value="Caplet">Caplet</option>
+        <option value="Lozenge">Lozenge</option>
+        <option value="Nasal Spray">Nasal Spray</option>
+        <option value="Other">Other</option>
+    </select>
+    <input class="modal-input" id="modalInputOtherMedium" type="text" placeholder="Specify other medium..." style="display:none;">
+
     <label style="font-size: 0.7rem; text-transform: uppercase; color: #777;">Route</label>
     <select class="modal-select" id="modalSelectRoa">
         <option value="Oral">Oral</option>
@@ -193,8 +205,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v5');
-    const savedLog = localStorage.getItem('med_log_v5');
+    const savedTimers = localStorage.getItem('med_timers_v6');
+    const savedLog = localStorage.getItem('med_log_v6');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -204,8 +216,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v5', JSON.stringify(timers));
-    localStorage.setItem('med_log_v5', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v6', JSON.stringify(timers));
+    localStorage.setItem('med_log_v6', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -213,9 +225,16 @@
     document.getElementById('stepperVal').textContent = modalDoseNum;
   }
 
+  function checkOtherMedium(val) {
+    const otherInput = document.getElementById('modalInputOtherMedium');
+    otherInput.style.display = (val === 'Other') ? 'block' : 'none';
+  }
+
   function openModal() { 
     modalDoseNum = 1;
     document.getElementById('stepperVal').textContent = '1';
+    document.getElementById('modalSelectMedium').value = 'Tablet';
+    checkOtherMedium('Tablet');
     document.getElementById('modalOverlay').classList.add('show'); 
   }
   
@@ -226,6 +245,11 @@
     const amount = parseFloat(document.getElementById('modalInputDosage').value || 0);
     const unit = document.getElementById('modalInputUnit').value || 'units';
     const roa = document.getElementById('modalSelectRoa').value;
+    
+    let medium = document.getElementById('modalSelectMedium').value;
+    if (medium === 'Other') {
+      medium = document.getElementById('modalInputOtherMedium').value || 'Other';
+    }
 
     if (!name) return;
 
@@ -238,6 +262,7 @@
       dosageAmount: amount,
       unit,
       roa,
+      medium,
       doseNum: modalDoseNum,
       startedAt: null,
       elapsed: 0,
@@ -252,6 +277,7 @@
     document.getElementById('modalInput').value = '';
     document.getElementById('modalInputDosage').value = '';
     document.getElementById('modalInputUnit').value = '';
+    document.getElementById('modalInputOtherMedium').value = '';
   }
 
   function startTimer(id) {
@@ -346,6 +372,7 @@
         <div class="name-row">
           <span class="med-title">${t.name}</span>
           <span class="badge">${t.dosageAmount}${t.unit}</span>
+          <span class="badge medium-badge">${t.medium}</span>
           <span class="badge roa-badge">${t.roa}</span>
           <span class="badge dose-num-badge">Dose ${t.doseNum}</span>
           <button style="border:none; background:none; color:#ddd; font-size: 1.2rem;" onclick="deleteTimer(${t.id})">✕</button>
