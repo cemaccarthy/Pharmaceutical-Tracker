@@ -18,9 +18,11 @@
     --border: #dee2e6;
     --tag-bg: #e7f3ff;
     --tag-text: #007bff;
-    /* Light Red for Dose Tag */
     --dose-bg: #ffe7e7;
     --dose-text: #d93025;
+    /* Light Yellow for ROA */
+    --roa-bg: #fff9db;
+    --roa-text: #856404;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,7 +32,7 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 20px 20px 140px;
+    padding: 20px 20px 160px; /* Increased bottom padding for body */
   }
 
   .header { text-align: center; margin-bottom: 30px; }
@@ -87,7 +89,6 @@
   .btn-start { border-color: var(--accent); color: var(--accent); }
   .btn-stop { border-color: var(--danger); color: var(--danger); }
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
-  .btn-reset-small { font-size: 0.6rem; padding: 4px 8px; border-color: #777; color: #777; }
 
   .badge { 
     font-size: 0.75rem; 
@@ -101,18 +102,24 @@
     display: inline-block;
   }
 
-  .badge-red {
-    background: var(--dose-bg);
-    color: var(--dose-text);
-  }
+  .badge-red { background: var(--dose-bg); color: var(--dose-text); }
+  .badge-yellow { background: var(--roa-bg); color: var(--roa-text); }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
-  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
-  
-  .inline-group { display: flex; gap: 10px; align-items: flex-start; }
-  .inline-group > * { flex: 1; }
+  .add-btn-container { margin-bottom: 40px; } /* Ensures space above summary bar */
+
+  .summary-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: black;
+    color: white;
+    padding: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 1001;
+    text-align: center;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+  }
 
   .drawer {
     position: fixed;
@@ -122,33 +129,23 @@
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
+    z-index: 1002;
     padding: 20px;
-    max-height: 70vh;
+    max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
   }
   .drawer.open { transform: translateY(0); }
   .drawer-handle { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 20px; }
-  .total-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: black; }
+  
+  .total-row { padding: 16px 0; border-bottom: 1px solid #f0f0f0; color: black; }
 
-  .summary-bar {
-    position: fixed;
-    bottom: 20px; left: 50%;
-    transform: translateX(-50%);
-    background: black;
-    color: white;
-    padding: 14px 28px;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 999;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    text-align: center;
-    white-space: nowrap;
-  }
-
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 400px; color: black; overflow-y: auto; max-height: 90vh; }
+  .modal-input, .modal-select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Mono'; font-size: 0.9rem; }
+  
+  .inline-group { display: flex; gap: 10px; align-items: flex-start; }
+  .inline-group > * { flex: 1; }
   .stepper-row { display: flex; align-items: center; margin-bottom: 15px; }
   .stepper-btn { background: #eee; border: 1px solid var(--border); width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
   .stepper-num { flex: 1; text-align: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 40px; line-height: 40px; }
@@ -166,7 +163,10 @@
   <div id="bulkControls" class="bulk-controls">
     <button id="bulkBtn" class="btn btn-start" style="width:100%; font-weight:bold;">Start All New Timers</button>
   </div>
-  <button class="btn" style="width:100%; padding:15px; margin-bottom:10px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
+  
+  <div class="add-btn-container">
+    <button class="btn" style="width:100%; padding:15px; color:black; border-color: black;" onclick="openModal()">+ Add New Med</button>
+  </div>
 </div>
 
 <div class="summary-bar" onclick="toggleDrawer()">
@@ -247,8 +247,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v10');
-    const savedLog = localStorage.getItem('med_log_v10');
+    const savedTimers = localStorage.getItem('med_timers_v11');
+    const savedLog = localStorage.getItem('med_log_v11');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -258,8 +258,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v10', JSON.stringify(timers));
-    localStorage.setItem('med_log_v10', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v11', JSON.stringify(timers));
+    localStorage.setItem('med_log_v11', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -298,7 +298,6 @@
     
     let unit = document.getElementById('modalSelectUnit').value;
     if (unit === 'Other') unit = document.getElementById('modalInputOtherUnit').value || 'unit';
-
     let medium = document.getElementById('modalSelectMedium').value;
     if (medium === 'Other') medium = document.getElementById('modalInputOtherMedium').value || 'Other';
 
@@ -360,16 +359,6 @@
     render();
   }
 
-  function resetTimer(id) {
-    const t = timers.find(t => t.id === id);
-    if (t.running) stopTimer(id);
-    t.elapsed = 0;
-    t.running = false;
-    t.startedAt = null;
-    saveData();
-    render();
-  }
-
   function deleteTimer(id) {
     if(confirm("Remove this medication?")) {
         timers = timers.filter(t => t.id !== id);
@@ -408,9 +397,7 @@
     entries.forEach(([name, total]) => {
         const timer = timers.find(t => t.name === name);
         const unit = timer ? timer.unit : '';
-        const tId = timer ? timer.id : null;
-        let resetBtnHtml = tId ? `<button class="btn btn-reset-small" onclick="resetTimer(${tId})">Reset Timer</button>` : '';
-        list.innerHTML += `<div class="total-row"><div><span style="display:block; font-weight:700;">${name}</span><span style="font-size:0.9rem;">${total} ${unit}</span></div>${resetBtnHtml}</div>`;
+        list.innerHTML += `<div class="total-row"><div><span style="display:block; font-weight:700;">${name}</span><span style="font-size:0.9rem;">${total} ${unit}</span></div></div>`;
     });
   }
 
@@ -418,7 +405,7 @@
     const container = document.getElementById('container');
     const bulkDiv = document.getElementById('bulkControls');
     const bulkBtn = document.getElementById('bulkBtn');
-    const addBtn = container.querySelector('.btn[onclick="openModal()"]');
+    const addBtnContainer = container.querySelector('.add-btn-container');
     container.querySelectorAll('.timer-card').forEach(el => el.remove());
 
     const hasStoppedTimers = timers.some(t => !t.running);
@@ -444,7 +431,7 @@
           ${releaseBadgeHtml}
         </div>
         <div class="name-row" style="margin-top: -8px; gap: 4px;">
-          <span class="badge">${t.roa}</span>
+          <span class="badge badge-yellow">${t.roa}</span>
           <span class="badge badge-red">Dose ${t.doseNum}</span>
         </div>
         <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
@@ -454,7 +441,7 @@
             `<button class="btn btn-start" onclick="startTimer(${t.id})">Start</button>`}
         </div>
       `;
-      container.insertBefore(card, addBtn);
+      container.insertBefore(card, addBtnContainer);
     });
   }
 
