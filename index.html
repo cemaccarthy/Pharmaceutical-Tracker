@@ -16,6 +16,9 @@
     --text-muted: #555555;
     --danger: #d93025;
     --border: #dee2e6;
+    /* Updated Tag Color to Light Blue */
+    --tag-bg: #e7f3ff;
+    --tag-text: #007bff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,8 +58,8 @@
   }
   .timer-card.running { border-color: var(--accent); border-width: 2px; }
 
-  .name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
-  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; min-width: 150px; }
+  .name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .med-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; flex: 1; min-width: 150px; margin-bottom: 4px; }
 
   .time-display { 
     font-family: 'DM Mono', monospace; 
@@ -84,11 +87,17 @@
   .btn-danger-fill { background: var(--danger); color: white; border: none; }
   .btn-reset-small { font-size: 0.6rem; padding: 4px 8px; border-color: #777; color: #777; }
 
-  .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; background: #eee; font-weight: 600; color: #333; text-transform: uppercase; }
-  .roa-badge { background: #e7f3ff; color: #007bff; }
-  .dose-num-badge { background: #fff3cd; color: #856404; }
-  .medium-badge { background: #f0f0f0; color: #555; }
-  .release-badge { background: #f0e6ff; color: #6f42c1; }
+  /* Uniform Light Blue Tag Style with Spacing */
+  .badge { 
+    font-size: 0.6rem; 
+    padding: 4px 10px; 
+    border-radius: 10px; 
+    background: var(--tag-bg); 
+    font-weight: 600; 
+    color: var(--tag-text); 
+    text-transform: uppercase;
+    margin: 2px 0; /* Added spacing to prevent clumping */
+  }
 
   .drawer {
     position: fixed;
@@ -219,8 +228,8 @@
   let modalDoseNum = 1;
 
   function loadData() {
-    const savedTimers = localStorage.getItem('med_timers_v7');
-    const savedLog = localStorage.getItem('med_log_v7');
+    const savedTimers = localStorage.getItem('med_timers_v8');
+    const savedLog = localStorage.getItem('med_log_v8');
     if (savedLog) dailyLog = JSON.parse(savedLog);
     if (savedTimers) {
       timers = JSON.parse(savedTimers);
@@ -230,8 +239,8 @@
   }
 
   function saveData() {
-    localStorage.setItem('med_timers_v7', JSON.stringify(timers));
-    localStorage.setItem('med_log_v7', JSON.stringify(dailyLog));
+    localStorage.setItem('med_timers_v8', JSON.stringify(timers));
+    localStorage.setItem('med_log_v8', JSON.stringify(dailyLog));
   }
 
   function changeDoseNum(delta) {
@@ -409,17 +418,19 @@
       const card = document.createElement('div');
       card.className = `timer-card ${t.running ? 'running' : ''}`;
       
-      let releaseBadgeHtml = t.release ? `<span class="badge release-badge">${t.release}</span>` : '';
+      let releaseBadgeHtml = t.release ? `<span class="badge">${t.release}</span>` : '';
 
       card.innerHTML = `
         <div class="name-row">
           <span class="med-title">${t.name}</span>
+          <button style="border:none; background:none; color:#ddd; font-size: 1.2rem; margin-left: auto;" onclick="deleteTimer(${t.id})">✕</button>
+        </div>
+        <div class="name-row" style="margin-top: -5px;">
           <span class="badge">${t.dosageAmount}${t.unit}</span>
           ${releaseBadgeHtml}
-          <span class="badge medium-badge">${t.medium}</span>
-          <span class="badge roa-badge">${t.roa}</span>
-          <span class="badge dose-num-badge">Dose ${t.doseNum}</span>
-          <button style="border:none; background:none; color:#ddd; font-size: 1.2rem;" onclick="deleteTimer(${t.id})">✕</button>
+          <span class="badge">${t.medium}</span>
+          <span class="badge">${t.roa}</span>
+          <span class="badge">Dose ${t.doseNum}</span>
         </div>
         <div class="time-display" id="time-${t.id}">${formatTime(t.running ? t.elapsed + (Date.now() - t.startedAt) : t.elapsed)}</div>
         <div class="controls">
