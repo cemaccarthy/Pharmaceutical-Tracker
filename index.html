@@ -2,19 +2,19 @@
 
 <html lang="en">
 <head>
-       <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Medication Tracker</title>
+<title>Decimal Medication Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f6f9;
+    --bg: #d7deea;
     --surface: #ffffff;
-    --surface2: #f0f3f7;
-    --border: #c8d4e3;
+    --surface2: #eef2f8;
+    --border: #a8b8cf;
     --accent: #1a56a0;
     --accent-light: #2563b8;
     --accent-pale: #e8f0fb;
@@ -23,9 +23,9 @@
     --red: #c62828;
     --text: #0f1e33;
     --text2: #1e3352;
-    --muted: #5a7399;
+    --muted: #4a6389;
     --seg-red: #ff3b30;
-    --card-shadow: 0 2px 12px rgba(26,86,160,0.09), 0 1px 3px rgba(0,0,0,0.06);
+    --card-shadow: 0 2px 14px rgba(15,30,51,0.14), 0 1px 4px rgba(0,0,0,0.10);
   }
 
 - { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -45,9 +45,9 @@ padding-bottom: max(2rem, env(safe-area-inset-bottom));
 
 /* ── HEADER ── */
 header {
-background: #bfdbfe;
-border-bottom: 1.5px solid #93c5fd;
-box-shadow: 0 1px 6px rgba(26,86,160,0.12);
+background: #9dc0f0;
+border-bottom: 1.5px solid #6fa3e8;
+box-shadow: 0 1px 6px rgba(26,86,160,0.18);
 position: sticky;
 top: 0;
 z-index: 20;
@@ -80,7 +80,7 @@ align-items: center;
 gap: 0.4rem;
 padding: 0.48rem 0.85rem;
 background: #1e3a8a;
-border: none;
+border: 1.5px solid #14265c;
 border-radius: 10px;
 color: #fff;
 font-family: ‘Orbitron’, monospace;
@@ -380,7 +380,7 @@ height: 110px;
 
 <header>
   <div class="header-inner">
-    <h1>Medication Tracker</h1>
+    <h1>Decimal Medication Tracker</h1>
     <button class="toggle-form-btn open" id="toggleFormBtn" onclick="toggleForm()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
         <line x1="6" y1="1" x2="6" y2="11"/>
@@ -457,18 +457,18 @@ height: 110px;
     <!-- Duration fields -->
     <div class="form-row" id="durationFieldsWrap">
       <div class="field">
-        <label>Duration of Action (hh:mm)</label>
-        <input type="text" id="durationAction" placeholder="e.g. 06:00" inputmode="numeric" maxlength="5">
+        <label>Duration of Action (dec. hh:mm)</label>
+        <input type="text" id="durationAction" placeholder="e.g. 4:00" inputmode="numeric" maxlength="5">
       </div>
       <div class="field">
-        <label>Come-Up Duration (hh:mm)</label>
-        <input type="text" id="durationComeup" placeholder="e.g. 00:30" inputmode="numeric" maxlength="5">
+        <label>Come-Up Duration (dec. hh:mm)</label>
+        <input type="text" id="durationComeup" placeholder="e.g. 0:20" inputmode="numeric" maxlength="5">
       </div>
     </div>
     <div class="form-row" id="durationFieldsWrap2">
       <div class="field">
-        <label>Come-Down Duration (hh:mm)</label>
-        <input type="text" id="durationComedown" placeholder="e.g. 01:00" inputmode="numeric" maxlength="5">
+        <label>Come-Down Duration (dec. hh:mm)</label>
+        <input type="text" id="durationComedown" placeholder="e.g. 0:70" inputmode="numeric" maxlength="5">
       </div>
       <div class="field"></div>
     </div>
@@ -484,8 +484,8 @@ height: 110px;
       </div>
       <div id="priorTimeWrap" class="reveal-field" style="display:none">
         <div class="field" style="margin-top:0.4rem">
-          <label>Time Taken</label>
-          <input type="time" id="priorTime">
+          <label>Time Taken (dec. hh:mm, 24h decimal clock)</label>
+          <input type="text" id="priorTime" placeholder="e.g. 6:25" inputmode="numeric" maxlength="5">
         </div>
       </div>
     </div>
@@ -631,18 +631,59 @@ function handleSimpleTimerToggle() {
   });
 }
 
-/* ── PARSE hh:mm → minutes ── */
-function parseHHMM(str) {
+/* ── DECIMAL TIME CONVERSIONS ──
+   Decimal day: 10 decimal hours/day, 100 decimal minutes/hour, 100 decimal seconds/minute.
+   1 decimal day = 86400 real seconds, so:
+   1 decimal hour  = 8640 real seconds
+   1 decimal min   = 86.4 real seconds
+   1 decimal sec   = 0.864 real seconds
+*/
+const REAL_SEC_PER_DEC_SEC = 0.864;
+const REAL_SEC_PER_DEC_MIN = 86.4;
+const REAL_SEC_PER_DEC_HOUR = 8640;
+
+// Real milliseconds → decimal {h, m, s} (each 0-9 / 0-99 / 0-99)
+function realMsToDecimalHMS(ms) {
+  let totalDecSec = (ms / 1000) / REAL_SEC_PER_DEC_SEC;
+  let h = Math.floor(totalDecSec / 10000);
+  totalDecSec -= h * 10000;
+  let m = Math.floor(totalDecSec / 100);
+  let s = Math.floor(totalDecSec % 100);
+  return { h, m, s };
+}
+
+// Decimal hh:mm (as typed, e.g. "4:50") → real minutes (for internal duration math)
+function parseDecimalHHMM(str) {
   const s = str.trim();
   if(!s) return null;
   const m = s.match(/^(\d{1,2}):(\d{2})$/);
   if(!m) return null;
-  return parseInt(m[1],10)*60 + parseInt(m[2],10);
+  const decH = parseInt(m[1],10), decM = parseInt(m[2],10);
+  if(decM > 99) return null;
+  const decTotalMin = decH * 100 + decM;
+  const realSeconds = decTotalMin * REAL_SEC_PER_DEC_MIN;
+  return realSeconds / 60; // real minutes
 }
 
-/* ── AUTO-FORMAT hh:mm inputs ── */
-['durationAction','durationComeup','durationComedown'].forEach(id => {
+// Real minutes → decimal hh:mm string (for displaying stored durations, e.g. in graph axis)
+function realMinsToDecimalHHMM(realMins) {
+  const realSeconds = realMins * 60;
+  const decTotalMin = realSeconds / REAL_SEC_PER_DEC_MIN;
+  const decH = Math.floor(decTotalMin / 100);
+  const decM = Math.round(decTotalMin % 100);
+  return `${decH}:${String(decM).padStart(2,'0')}`;
+}
+
+/* ── PARSE decimal hh:mm → real minutes (duration fields) ── */
+function parseHHMM(str) {
+  return parseDecimalHHMM(str);
+}
+
+/* ── AUTO-FORMAT decimal hh:mm inputs ── */
+['durationAction','durationComeup','durationComedown','priorTime'].forEach(id => {
   document.getElementById(id).addEventListener('input', function() {
+    // If it's already a valid H:MM or HH:MM pattern (e.g. pasted/filled), leave it alone.
+    if(/^\d{1,2}:\d{2}$/.test(this.value)) return;
     let v = this.value.replace(/[^0-9]/g,'');
     if(v.length >= 3) v = v.slice(0,2)+':'+v.slice(2,4);
     this.value = v;
@@ -681,10 +722,10 @@ function makeSegSVG(ch, color) {
 const SEG_COLOR = '#22c55e';
 
 function renderDisplay(el, ms) {
-  const tot=Math.floor(ms/1000);
-  const hh=String(Math.floor(tot/3600)).padStart(2,'0');
-  const mm=String(Math.floor((tot%3600)/60)).padStart(2,'0');
-  const ss=String(tot%60).padStart(2,'0');
+  const {h, m, s} = realMsToDecimalHMS(ms);
+  const hh=String(h).padStart(2,'0');
+  const mm=String(m).padStart(2,'0');
+  const ss=String(s).padStart(2,'0');
   const d=hh+mm+ss;
   let html='';
   for(let i=0;i<6;i++){
@@ -748,7 +789,7 @@ function drawPKGraph(canvas, med, elapsedMs) {
   ctx.fillText('1', PAD_L - 5, toCanvasY(1));
   ctx.fillText('0', PAD_L - 5, toCanvasY(0));
 
-  // X ticks & labels
+  // X ticks & labels (decimal time)
   const tickStep = totalMins <= 60 ? 15 : totalMins <= 180 ? 30 : totalMins <= 480 ? 60 : 120;
   ctx.font = `600 9px Rajdhani, sans-serif`;
   ctx.textAlign = 'center';
@@ -761,7 +802,7 @@ function drawPKGraph(canvas, med, elapsedMs) {
     ctx.moveTo(cx, PAD_T + gH);
     ctx.lineTo(cx, PAD_T + gH + 4);
     ctx.stroke();
-    const label = t >= 60 ? `${Math.floor(t/60)}h${t%60?String(t%60).padStart(2,'0')+'m':''}` : `${t}m`;
+    const label = realMinsToDecimalHHMM(t);
     ctx.fillStyle = '#666666';
     ctx.fillText(label, cx, PAD_T + gH + 6);
   }
@@ -922,11 +963,19 @@ function addMedication() {
 
   let elapsed = 0;
   if(priorOn && priorTime){
-    const [ph,pm] = priorTime.split(':').map(Number);
-    const now = new Date(), taken = new Date(now);
-    taken.setHours(ph,pm,0,0);
-    if(taken > now) taken.setDate(taken.getDate()-1);
-    elapsed = Math.max(0, now-taken);
+    const m = priorTime.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if(m){
+      const decH = parseInt(m[1],10), decM = parseInt(m[2],10);
+      // decimal time-of-day → real seconds since midnight
+      const decTotalMin = decH*100 + decM;
+      const realSecSinceMidnight = decTotalMin * REAL_SEC_PER_DEC_MIN;
+      const now = new Date();
+      const taken = new Date(now);
+      taken.setHours(0,0,0,0);
+      taken.setSeconds(realSecSinceMidnight);
+      if(taken > now) taken.setDate(taken.getDate()-1);
+      elapsed = Math.max(0, now-taken);
+    }
   }
 
   const med = {
